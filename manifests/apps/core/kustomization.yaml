@@ -1,0 +1,4 @@
+resources:
+  - dashboards
+  - prom-rule-volumes.yaml
+  - prom-rule-nodes.yaml

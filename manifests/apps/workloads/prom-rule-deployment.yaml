@@ -1,0 +1,35 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: deployment
+spec:
+  groups:
+    - name: deployment
+      rules:
+        - alert: KubernetesReplicasetReplicasMismatch
+          expr: kube_replicaset_spec_replicas != kube_replicaset_status_ready_replicas
+          for: 10m
+          labels:
+            severity: warning
+            app: workloads
+          annotations:
+            summary: Kubernetes ReplicaSet replicas mismatch (instance {{ $labels.instance }})
+            description: "ReplicaSet {{ $labels.namespace }}/{{ $labels.replicaset }} replicas mismatch\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesDeploymentReplicasMismatch
+          expr: kube_deployment_spec_replicas != kube_deployment_status_replicas_available
+          for: 10m
+          labels:
+            severity: warning
+            app: workloads
+          annotations:
+            summary: Kubernetes Deployment replicas mismatch (instance {{ $labels.instance }})
+            description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} replicas mismatch\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesDeploymentGenerationMismatch
+          expr: kube_deployment_status_observed_generation != kube_deployment_metadata_generation
+          for: 10m
+          labels:
+            severity: critical
+            app: workloads
+          annotations:
+            summary: Kubernetes Deployment generation mismatch (instance {{ $labels.instance }})
+            description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has failed but has not been rolled back.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

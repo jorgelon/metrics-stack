@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-redis-haproxy-metrics
+spec:
+  jobLabel: app.kubernetes.io/name
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-redis-ha-haproxy
+  endpoints:
+    - port: http-exporter-port
+  namespaceSelector:
+    matchNames:
+      - argocd

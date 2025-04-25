@@ -1,0 +1,7 @@
+resources:
+  - k8s-deploy-karma.yaml
+  - k8s-svc-karma.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: karma
+      app.kubernetes.io/component: alerts-ui

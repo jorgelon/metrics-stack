@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: infisical
+spec:
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - infisical
+  podMetricsEndpoints:
+    - path: /metrics
+      portNumber: 9464
+  selector:
+    matchLabels:
+      app: infisical
+      component: infisical

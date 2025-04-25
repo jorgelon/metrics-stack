@@ -1,0 +1,4 @@
+resources:
+  - grafana-db-coredns.yaml
+  - prom-rule-coredns.yaml
+  - prom-sm-coredns.yaml

@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: kured
+spec:
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - kured
+  podMetricsEndpoints:
+    - path: /metrics
+      portNumber: 8080
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kured

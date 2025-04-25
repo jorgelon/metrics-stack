@@ -1,0 +1,10 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: cilium-operator
+spec:
+  instanceSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  url: https://raw.githubusercontent.com/cilium/cilium/refs/heads/main/install/kubernetes/cilium/files/cilium-operator/dashboards/cilium-operator-dashboard.json
+  folder: cilium

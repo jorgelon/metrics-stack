@@ -1,0 +1,8 @@
+resources:
+  - prom-rule-container.yaml
+  - prom-rule-daemonset.yaml
+  - prom-rule-deployment.yaml
+  - prom-rule-hpa.yaml
+  - prom-rule-job.yaml
+  - prom-rule-pod.yaml
+  - prom-rule-statefulset.yaml

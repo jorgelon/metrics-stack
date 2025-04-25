@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karma
+spec:
+  selector:
+    matchLabels:
+      app: karma
+  template:
+    metadata:
+      labels:
+        app: karma
+    spec:
+      containers:
+        - name: karma
+          image: ghcr.io/prymitive/karma:v0.121
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          env:
+            - name: ALERTMANAGER_URI
+              value: http://alertmanager-operated:9093
+          resources:
+            limits:
+              memory: 150Mi
+            requests:
+              cpu: 10m
+              memory: 25Mi
+          livenessProbe:
+            tcpSocket:
+              port: http
+            failureThreshold: 5
+          readinessProbe:
+            tcpSocket:
+              port: http

@@ -1,0 +1,6 @@
+resources:
+  - prom-pm-infisical.yaml
+  - prom-rule-infisical.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: infisical

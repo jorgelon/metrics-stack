@@ -1,0 +1,2 @@
+resources:
+  - prom-rule-external-secrets.yaml

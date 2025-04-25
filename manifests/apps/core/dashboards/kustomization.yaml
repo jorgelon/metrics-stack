@@ -1,0 +1,6 @@
+resources:
+  - grafana-db-global.yaml
+  - grafana-db-namespaces.yaml
+  - grafana-db-nodes.yaml
+  - grafana-db-pods.yaml
+  - grafana-db-volumes.yaml

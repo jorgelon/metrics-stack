@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: infisical
+spec:
+  groups:
+    - name: infisical
+      rules:
+        - alert: RateLimitErrorSecretsGet
+          expr: API_errors_count{route="/api/v3/secrets/raw",method="GET",type="RateLimitError"} > 0
+          for: 2m
+          annotations:
+            summary: Rate limit error on secrets get
+            description: Rate limit error on secrets get
+          labels:
+            severity: warning
+            app: infisical
+        - alert: RateLimitErrorUniversalAuthPost
+          expr: API_errors_count{route="/api/v1/auth/universal-auth/login",method="POST",type="RateLimitError"} > 0
+          for: 2m
+          labels:
+            severity: warning
+            app: infisical
+          annotations:
+            summary: Rate limit error on universal auth post
+            description: Rate limit error on universal auth post

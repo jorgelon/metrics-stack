@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kured
+spec:
+  groups:
+    - name: kured
+      rules:
+        - alert: RateLimitErrorSecretsGet
+          expr: kured_reboot_required > 0
+          for: 2m
+          annotations:
+            summary: Kured needs to reboot the node
+            description: Kured needs to reboot the node {{ $labels.node }}.
+          labels:
+            severity: warning
+            app: kured

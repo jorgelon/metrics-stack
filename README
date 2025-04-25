@@ -1,0 +1,89 @@
+# Metrics stack
+
+This is a non production and opinionated deployment of a prometheus instance with kubernetes and other applications metrics
+It is meant to be deployed under the "monitoring" namespace and a kubeadm kubernetes cluster
+
+## For this I am using
+
+- Kustomize
+- Prometheus Operator (official manifests)
+- Grafana Operator (official manifests)
+- Prometheus Adapter (official manifests)
+- Kube State Metrics (hand made manifests)
+- Node exporter (hand made manifests)
+- Some argocd related settings, like waves
+
+### Additional dashboards
+
+- <https://github.com/dotdc/grafana-dashboards-kubernetes>
+- <https://github.com/kubernetes-monitoring/kubernetes-mixin>
+- <https://monitoring.mixins.dev/>
+
+### Additional rules
+
+- <https://github.com/bdossantos/prometheus-alert-rules>
+- <https://samber.github.io/awesome-prometheus-alerts/rules.html>
+
+## Argocd waves
+
+- Wave -5:
+
+prometheus-operator
+grafana-operator
+
+- Wave -3:
+
+prometheus
+
+- Wave -1:
+
+Alertmanager
+
+- Wave 0 (default)
+  
+Other stuff
+
+## Day 2 settings
+
+Via kustomize overlays we can
+
+### Give persistent storage to
+
+- Prometheus
+- Alertmanager
+- Grafana
+
+### Kubernetes resources
+
+Configure container requests and limits
+
+- Prometheus
+- Alertmanager
+- Grafana
+
+## HA pods
+
+Configure HA(replicas, pdb, autoescaling,...)
+
+- Prometheus
+- Alertmanager
+- Grafana
+- Kube State Metrics
+
+Less important
+
+- Prometheus operator
+- Grafana Operator
+- Karma
+
+### Expose services
+
+Possibility to expose via ingress the following services
+
+- Grafana
+- Karma
+- Prometheus
+
+### Send alerts
+
+- Alertmanagerconfig
