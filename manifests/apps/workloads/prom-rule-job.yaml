@@ -1,0 +1,53 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: job
+spec:
+  groups:
+    - name: jobs
+      rules:
+        - alert: KubernetesJobFailed
+          expr: kube_job_status_failed > 0
+          for: 0m
+          labels:
+            severity: warning
+            app: workloads
+          annotations:
+            summary: Kubernetes Job failed (instance {{ $labels.instance }})
+            description: "Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to complete\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesJobNotStarting
+          expr: kube_job_status_active == 0 and kube_job_status_failed == 0 and kube_job_status_succeeded == 0 and (time() - kube_job_status_start_time) > 600
+          for: 0m
+          labels:
+            severity: warning
+            app: workloads
+          annotations:
+            summary: Kubernetes Job not starting (instance {{ $labels.instance }})
+            description: "Job {{ $labels.namespace }}/{{ $labels.job_name }} did not start for 10 minutes\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesCronjobSuspended
+          expr: kube_cronjob_spec_suspend != 0
+          for: 0m
+          labels:
+            severity: warning
+            app: workloads
+          annotations:
+            summary: Kubernetes CronJob suspended (instance {{ $labels.instance }})
+            description: "CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is suspended\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesCronjobTooLong
+          expr: time() - kube_cronjob_next_schedule_time > 3600
+          for: 0m
+          labels:
+            severity: warning
+            app: workloads
+          annotations:
+            summary: Kubernetes CronJob too long (instance {{ $labels.instance }})
+            description: "CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is taking more than 1h to complete.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesJobSlowCompletion
+          expr: kube_job_spec_completions - kube_job_status_succeeded - kube_job_status_failed > 0
+          for: 12h
+          labels:
+            severity: critical
+            app: workloads
+          annotations:
+            summary: Kubernetes Job slow completion (instance {{ $labels.instance }})
+            description: "Kubernetes Job {{ $labels.namespace }}/{{ $labels.job_name }} did not complete in time.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

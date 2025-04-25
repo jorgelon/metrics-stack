@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: kube-proxy
+spec:
+  namespaceSelector:
+    matchNames:
+      - kube-system
+  podMetricsEndpoints:
+    - path: /metrics
+      portNumber: 10249
+      tlsConfig:
+        insecureSkipVerify: true
+      authorization: # use the Bearer token for authorization
+        type: Bearer
+        credentials:
+          key: token
+          name: prometheus-sa-token
+  selector:
+    matchLabels:
+      component: kube-proxy
+      tier: control-plane

@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: coredns
+spec:
+  jobLabel: kubernetes.io/name
+  endpoints:
+    - port: metrics
+      authorization: # use the Bearer token for authorization
+        type: Bearer
+        credentials:
+          key: token
+          name: prometheus-sa-token
+  namespaceSelector:
+    matchNames:
+      - kube-system
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+      kubernetes.io/name: CoreDNS

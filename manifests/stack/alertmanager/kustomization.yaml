@@ -1,7 +1,6 @@
 resources:
   - k8s-sa-alertmanager.yaml
   - prom-am-instance.yaml
-  - prom-amc-teams.yaml
 labels:
   - pairs:
       app.kubernetes.io/name: alertmanager

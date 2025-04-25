@@ -1,0 +1,6 @@
+resources:
+  - prom-pm-kured.yaml
+  - prom-rule-kured.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: kured

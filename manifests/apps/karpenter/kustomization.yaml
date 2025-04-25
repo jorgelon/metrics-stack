@@ -1,0 +1,5 @@
+resources:
+  - prom-sm-karpenter.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: karpenter

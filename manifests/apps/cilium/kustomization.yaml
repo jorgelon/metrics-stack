@@ -1,0 +1,14 @@
+resources:
+  - grafana-db-cilium-agent.yaml
+  - grafana-db-cilium-operator.yaml
+  - grafana-db-hubble-dns.yaml
+  - grafana-db-hubble-l7.yaml
+  - grafana-db-hubble-network.yaml
+  - grafana-db-hubble.yaml
+  - prom-rule-cilium.yaml
+  - prom-sm-cilium-agent.yaml
+  - prom-sm-cilium-operator.yaml
+  - prom-sm-hubble.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: cilium

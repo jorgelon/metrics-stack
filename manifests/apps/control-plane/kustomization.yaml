@@ -1,0 +1,11 @@
+resources:
+  - grafana-db-api-server.yaml
+  - prom-rule-control-plane.yaml
+  - prom-sm-kube-api-server.yaml
+  - prom-sm-kubelet.yaml
+    # - prom-pm-kube-controller-manager.yaml # 127.0.0.1:10257 https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/
+    # - prom-pm-kube-proxy.yaml # 127.0.0.1:10249 https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
+    # - prom-pm-kube-scheduler.yaml # 127.0.0.1:10259   https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/
+labels:
+  - pairs:
+      app.kubernetes.io/name: control-plane

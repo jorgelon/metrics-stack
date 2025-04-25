@@ -1,0 +1,66 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: volumes
+spec:
+  groups:
+    - name: volumes
+      rules:
+        - alert: KubernetesPersistentvolumeclaimPending
+          expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+          for: 2m
+          labels:
+            severity: warning
+            app: volumes
+          annotations:
+            summary: Kubernetes PersistentVolumeClaim pending (instance {{ $labels.instance }})
+            description: "PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesVolumeOutOfDiskSpace
+          expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10
+          for: 2m
+          labels:
+            severity: critical
+            app: volumes
+          annotations:
+            summary: Kubernetes Volume out of disk space (instance {{ $labels.instance }})
+            description: "Volume is critically full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesVolumeAlmostOutOfDiskSpace
+          expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 20
+          for: 2m
+          labels:
+            severity: warning
+            app: volumes
+          annotations:
+            summary: Kubernetes Volume out of disk space (instance {{ $labels.instance }})
+            description: "Volume is almost full (< 20% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesVolumeFullInFourDays
+          expr: predict_linear(kubelet_volume_stats_available_bytes[6h:5m], 4 * 24 * 3600) < 0
+          for: 0m
+          labels:
+            severity: critical
+            app: volumes
+          annotations:
+            summary: Kubernetes Volume full in four days (instance {{ $labels.instance }})
+            description: "Volume under {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is expected to fill up within four days. Currently {{ $value | humanize }}% is available.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: KubernetesPersistentvolumeError
+          expr: kube_persistentvolume_status_phase{phase=~"Failed|Pending", job="kube-state-metrics"} > 0
+          for: 0m
+          labels:
+            severity: critical
+            app: volumes
+          annotations:
+            summary: Kubernetes PersistentVolume error (instance {{ $labels.instance }})
+            description: "Persistent volume {{ $labels.persistentvolume }} is in bad state\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        - alert: ContainerFSUsage
+          expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100 > 90
+          for: 2m
+          labels:
+            severity: warning
+            app: volumes
+          annotations:
+            summary: Container filesystem usage (instance {{ $labels.instance }})
+            description: "Container filesystem usage is over 90%\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+#         - alert: nodefull
+#           expr: (sum by (instance,device) (node_filesystem_size_bytes) - sum by (instance,device) (node_filesystem_avail_bytes) ) / sum by (instance,device) (node_filesystem_size_bytes) * 100
+
+# (sum by (instance,device) (node_filesystem_size_bytes) - sum by (instance,device) (node_filesystem_avail_bytes) ) / sum by (instance,device) (node_filesystem_size_bytes) * 100

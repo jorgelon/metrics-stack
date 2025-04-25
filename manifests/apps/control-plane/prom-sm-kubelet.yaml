@@ -1,0 +1,94 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kubelet
+spec:
+  jobLabel: app.kubernetes.io/name
+  endpoints:
+    - path: /metrics
+      port: https-metrics
+      authorization: # use the Bearer token for authorization
+        type: Bearer
+        credentials:
+          key: token
+          name: prometheus-sa-token
+      scheme: https # use https
+      tlsConfig: # skip the verification of the certificate
+        insecureSkipVerify: true
+        caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      honorLabels: true # use the discovered labels from the target
+      relabelings: # replace the __metrics_path__ label with the metrics_path label
+        - action: replace
+          sourceLabels:
+            - __metrics_path__
+          targetLabel: metrics_path
+    - path: /metrics/cadvisor
+      port: https-metrics
+      authorization:
+        type: Bearer
+        credentials:
+          key: token
+          name: prometheus-sa-token
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: true
+      honorLabels: true
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __metrics_path__
+          targetLabel: metrics_path
+    - path: /metrics/slis
+      port: https-metrics
+      authorization:
+        type: Bearer
+        credentials:
+          key: token
+          name: prometheus-sa-token
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: true
+      honorLabels: true
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __metrics_path__
+          targetLabel: metrics_path
+    - path: /metrics/probes
+      port: https-metrics
+      authorization:
+        type: Bearer
+        credentials:
+          key: token
+          name: prometheus-sa-token
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: true
+      honorLabels: true
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __metrics_path__
+          targetLabel: metrics_path
+    - path: /metrics/resource
+      port: https-metrics
+      authorization:
+        type: Bearer
+        credentials:
+          key: token
+          name: prometheus-sa-token
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: true
+      honorLabels: true
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __metrics_path__
+          targetLabel: metrics_path
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubelet
+  namespaceSelector:
+    matchNames:
+      - kube-system
