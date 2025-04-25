@@ -22,3 +22,5 @@ labels:
 commonAnnotations:
   argocd.argoproj.io/sync-wave: "-5"
 EOF
+
+echo "Pleas delete the namepace declaration from the kustomize-namespace_scoped.yaml file"
