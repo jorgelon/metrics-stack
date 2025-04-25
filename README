@@ -13,16 +13,13 @@ It is meant to be deployed under the "monitoring" namespace and a kubeadm kubern
 - Node exporter (hand made manifests)
 - Some argocd related settings, like waves
 
-### Additional dashboards
-
-- <https://github.com/dotdc/grafana-dashboards-kubernetes>
-- <https://github.com/kubernetes-monitoring/kubernetes-mixin>
-- <https://monitoring.mixins.dev/>
-
-### Additional rules
+### Additional rules and dashboards
 
 - <https://github.com/bdossantos/prometheus-alert-rules>
 - <https://samber.github.io/awesome-prometheus-alerts/rules.html>
+- <https://github.com/dotdc/grafana-dashboards-kubernetes>
+- <https://github.com/kubernetes-monitoring/kubernetes-mixin>
+- <https://monitoring.mixins.dev/>
 
 ## Argocd waves and suggestions
 
