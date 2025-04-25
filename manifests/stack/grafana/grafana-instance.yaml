@@ -1,7 +1,7 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: Grafana
 metadata:
-  name: k8s
+  name: grafana-k8s
 spec:
   config:
     auth:
@@ -21,6 +21,11 @@ spec:
               volumeMounts:
                 - mountPath: /var/lib/grafana
                   name: grafana
+              resources:
+                requests:
+                  cpu: 100m
+                limits:
+                  memory: 512Mi
           securityContext:
             fsGroup: 472
             supplementalGroups:
