@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: node-exporter
+spec:
+  attachMetadata:
+    node: false
+  endpoints:
+    - port: https
+      scheme: https
+      authorization:
+        type: Bearer
+        credentials:
+          key: token
+          name: node-exporter-sa-token
+      tlsConfig:
+        insecureSkipVerify: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: nodename # https://github.com/dotdc/grafana-dashboards-kubernetes
+        # - action: replace
+        #   targetLabel: cluster
+        #   replacement: k8s
+  jobLabel: app.kubernetes.io/name
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: exporter
+      app.kubernetes.io/name: node-exporter
+      app.kubernetes.io/part-of: metrics-stack
+  namespaceSelector:
+    matchNames:
+      - monitoring

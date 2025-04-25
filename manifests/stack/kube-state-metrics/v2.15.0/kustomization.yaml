@@ -1,0 +1,16 @@
+resources:
+  - k8s-cr-kube-state-metrics.yaml
+  - k8s-crb-kube-state-metrics.yaml
+  - k8s-deploy-kube-state-metrics.yaml
+  - k8s-sa-kube-state-metrics.yaml
+  - k8s-svc-kube-state-metrics.yaml
+  - prom-sm-kube-state-metrics.yaml
+  - prom-rule-kube-state-metrics.yaml
+images:
+  - name: myregistry/myproject/myimage
+    newName: registry.k8s.io/kube-state-metrics/kube-state-metrics
+    newTag: v2.15.0
+labels:
+  - pairs:
+      app.kubernetes.io/name: kube-state-metrics
+      app.kubernetes.io/component: metrics

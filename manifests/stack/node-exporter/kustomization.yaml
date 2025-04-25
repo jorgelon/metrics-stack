@@ -1,0 +1,17 @@
+resources:
+  - k8s-cr-node-exporter.yaml
+  - k8s-crb-node-exporter.yaml
+  - k8s-ds-node-exporter.yaml
+  - k8s-sa-node-exporter.yaml
+  - k8s-secret-node-exporter-sa-token.yaml
+  - k8s-svc-node-exporter.yaml
+  - prom-sm-node-exporter.yaml
+images:
+  - name: quay.io/brancz/kube-rbac-proxy
+    newTag: v0.19.0
+  - name: quay.io/prometheus/node-exporter
+    newTag: v1.9.1
+labels:
+  - pairs:
+      app.kubernetes.io/name: node-exporter
+      app.kubernetes.io/component: exporter

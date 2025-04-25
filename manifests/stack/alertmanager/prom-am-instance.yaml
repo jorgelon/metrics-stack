@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: k8s-alertmanager
+spec:
+  alertmanagerConfigSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: alertmanager
