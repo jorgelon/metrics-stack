@@ -24,16 +24,22 @@ It is meant to be deployed under the "monitoring" namespace and a kubeadm kubern
 - <https://github.com/bdossantos/prometheus-alert-rules>
 - <https://samber.github.io/awesome-prometheus-alerts/rules.html>
 
-## Argocd waves
+## Argocd waves and suggestions
 
 - Wave -5:
 
 prometheus-operator
 grafana-operator
+grafana pvc (not included in this repo)
+(cluster)secretstore from external secrets (not included in this repo)
 
 - Wave -3:
 
 prometheus
+external secret for the AlertmanagerConfig (not included in this repo)
+
+- Wave -2:
+AlertmanagerConfig (not included in this repo)
 
 - Wave -1:
 
