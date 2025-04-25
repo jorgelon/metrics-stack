@@ -1,6 +1,6 @@
 resources:
   - prom-sm-argocd-applicationset-controller-metrics.yaml
-  - prom-sm-argocd-dex-server.yaml
+  # - prom-sm-argocd-dex-server.yaml https://github.com/argoproj/argo-helm/issues/615
   - prom-sm-argocd-metrics.yaml
   - prom-sm-argocd-notifications-controller.yaml
   - prom-sm-argocd-redis-haproxy-metrics.yaml
