@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: k8s-prometheus
+spec:
+  alerting:
+    alertmanagers:
+      - name: alertmanager-operated
+        port: web
+        apiVersion: v2
+  serviceAccountName: prometheus
+  serviceMonitorSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  podMonitorSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  ruleSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  probeSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000

@@ -1,0 +1,12 @@
+resources:
+  - k8s-cr-prometheus.yaml
+  - k8s-crb-prometheus.yaml
+  - prom-instance.yaml
+  - k8s-sa-prometheus.yaml
+  - k8s-secret-prometheus-sa-token.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: prometheus
+      app.kubernetes.io/component: metrics-storage
+commonAnnotations:
+  argocd.argoproj.io/sync-wave: "-3"

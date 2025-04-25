@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: teams
+spec:
+  route:
+    groupBy: ["job"]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    receiver: "teams"
+    matchers:
+      - name: severity
+        value: "critical|warning"
+        matchType: =~
+  receivers:
+    - name: "teams"
+      msteamsConfigs:
+        - webhookUrl:
+            key: msteams-webhook-url
+            name: msteams-webhook-url
+          summary: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+          sendResolved: true

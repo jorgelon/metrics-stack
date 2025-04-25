@@ -1,0 +1,31 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: k8s-grafana
+spec:
+  config:
+    auth:
+      disable_login_form: "false"
+    log:
+      mode: console
+  deployment:
+    spec:
+      template:
+        spec:
+          containers:
+            - envFrom:
+                - secretRef:
+                    name: grafana-env
+                    optional: true
+              name: grafana
+              volumeMounts:
+                - mountPath: /var/lib/grafana
+                  name: grafana
+          securityContext:
+            fsGroup: 472
+            supplementalGroups:
+              - 0
+          volumes:
+            - name: grafana
+              persistentVolumeClaim:
+                claimName: grafana
