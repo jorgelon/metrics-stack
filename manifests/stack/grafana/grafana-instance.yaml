@@ -21,9 +21,6 @@ spec:
                     name: grafana-env
                     optional: true
               name: grafana
-              volumeMounts:
-                - mountPath: /var/lib/grafana
-                  name: grafana
               resources:
                 requests:
                   cpu: 100m
