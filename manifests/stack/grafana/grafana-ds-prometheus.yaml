@@ -11,3 +11,4 @@ spec:
     type: prometheus
     url: http://prometheus-operated:9090
     isDefault: true
+    access: proxy
