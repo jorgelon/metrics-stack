@@ -9,11 +9,11 @@ spec:
     log:
       mode: console
   deployment:
+    metadata:
+      annotations:
+        secret.reloader.stakater.com/reload: "grafana-env"
     spec:
       template:
-        metadata:
-          annotations:
-            secret.reloader.stakater.com/reload: "grafana-env"
         spec:
           containers:
             - envFrom:
