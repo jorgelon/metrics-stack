@@ -1,6 +1,6 @@
 # CNPG
 
-In order to avoid duplicate metrics, disable the podmonitor in your clusters
+- In order to avoid duplicate metrics, disable the podmonitor in your clusters
 
 ```yaml
 spec:
@@ -8,4 +8,8 @@ spec:
     enablePodMonitor: false
 ```
 
-It assumes the operator is deployed in the cnpg-system namespace
+- It assumes the operator is deployed in the cnpg-system namespace
+
+- The default rules are located here
+
+<https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/refs/heads/main/docs/src/samples/monitoring/prometheusrule.yaml>
