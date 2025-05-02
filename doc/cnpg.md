@@ -7,3 +7,5 @@ spec:
   monitoring:
     enablePodMonitor: false
 ```
+
+It assumes the operator is deployed in the cnpg-system namespace
