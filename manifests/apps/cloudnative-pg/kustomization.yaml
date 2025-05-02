@@ -1,0 +1,7 @@
+resources:
+  - grafana-db-cloudnative-pg.yaml
+  - prom-pm-cloudnative-pg.yaml
+  - prom-rule-cloudnative-pg.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: cloudnative-pg
