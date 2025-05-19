@@ -6,6 +6,9 @@ spec:
   instanceSelector:
     matchLabels:
       app.kubernetes.io/part-of: metrics-stack
-  folder: "Quarkus"
+  folder: "quarkus"
   grafanaCom:
     id: 14370
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "prometheus"
