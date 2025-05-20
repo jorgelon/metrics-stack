@@ -1,0 +1,6 @@
+resources:
+  - grafana-db.yaml
+  - prom-sm-keycloak.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: keycloak
