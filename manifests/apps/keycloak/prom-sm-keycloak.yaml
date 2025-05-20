@@ -3,6 +3,7 @@ kind: ServiceMonitor
 metadata:
   name: keycloak
 spec:
+  jobLabel: kubernetes.io/name
   namespaceSelector:
     any: true
   selector:
