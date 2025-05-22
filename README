@@ -8,7 +8,7 @@ It is meant to be deployed under the "monitoring" namespace and a kubeadm kubern
 - Kustomize
 - Prometheus Operator (official manifests)
 - Grafana Operator (official manifests)
-- Prometheus Adapter (official manifests)
+- Metrics server (default) or Prometheus Adapter (official manifests)
 - Kube State Metrics (hand made manifests)
 - Node exporter (hand made manifests)
 - Some argocd related settings, like waves
