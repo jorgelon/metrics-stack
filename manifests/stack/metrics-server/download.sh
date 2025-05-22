@@ -10,12 +10,12 @@ echo "Cleaning ${release} directory"
 rm -rf ${release}
 mkdir -p ${release}
 
-curl -fSlL https://github.com/kubernetes-sigs/metrics-server/releases/download/${release}/high-availability-1.21+.yaml -o ${release}/metric-server.yaml
+curl -fSlL https://github.com/kubernetes-sigs/metrics-server/releases/download/${release}/high-availability-1.21+.yaml -o ${release}/metrics-server.yaml
 
 echo "Creating kustomization file from the yaml files inside the $release directory"
 cat <<EOF >${release}/kustomization.yaml
 resources:
-  - metric-server.yaml
+  - metrics-server.yaml
 labels:
   - pairs:
       app.kubernetes.io/name: metrics-server

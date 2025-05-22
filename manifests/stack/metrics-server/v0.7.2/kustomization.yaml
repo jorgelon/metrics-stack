@@ -1,5 +1,5 @@
 resources:
-  - metric-server.yaml
+  - metrics-server.yaml
 labels:
   - pairs:
       app.kubernetes.io/name: metrics-server
