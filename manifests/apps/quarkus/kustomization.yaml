@@ -1,0 +1,5 @@
+resources:
+  - grafana-db-quarkus.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: quarkus

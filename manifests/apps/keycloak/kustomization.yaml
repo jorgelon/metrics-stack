@@ -1,0 +1,5 @@
+resources:
+  - grafana-db.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: keycloak

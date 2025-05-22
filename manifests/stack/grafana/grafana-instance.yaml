@@ -9,6 +9,9 @@ spec:
     log:
       mode: console
   deployment:
+    metadata:
+      annotations:
+        secret.reloader.stakater.com/reload: "grafana-env"
     spec:
       template:
         spec:
