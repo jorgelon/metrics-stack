@@ -1,0 +1,14 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: loki-15141
+spec:
+  instanceSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  grafanaCom:
+    id: 15141
+  folder: loki-logs
+  datasources:
+    - inputName: "DS_LOKI"
+      datasourceName: "loki"
