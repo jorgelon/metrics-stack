@@ -1,5 +1,0 @@
-resources:
-  - grafana-db-13639.yaml
-  - grafana-db-15141.yaml
-  - grafana-db-16970.yaml
-  - grafana-db-17781.yaml

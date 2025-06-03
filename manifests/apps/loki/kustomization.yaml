@@ -1,5 +1,6 @@
 resources:
   - dashboards
+  # - loki-infra # wait until logs stack is ready
   - grafana-ds-loki.yaml
 labels:
   - pairs:
