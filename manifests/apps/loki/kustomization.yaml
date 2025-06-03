@@ -1,5 +1,5 @@
 resources:
-  - dashboards-logs
+  - dashboards
   - grafana-ds-loki.yaml
 labels:
   - pairs:
