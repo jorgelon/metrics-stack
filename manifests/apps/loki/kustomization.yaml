@@ -1,0 +1,5 @@
+resources:
+  - grafana-ds-loki.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: loki
