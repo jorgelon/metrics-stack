@@ -1,0 +1,13 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: keycloak-capacity-planning
+spec:
+  instanceSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  url: https://github.com/keycloak/keycloak-grafana-dashboard/blob/main/dashboards/keycloak-capacity-planning-dashboard.json
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "prometheus"
+  folder: "keycloak"

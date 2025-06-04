@@ -1,13 +1,12 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  name: keycloak
+  name: keycloak-troubleshooting
 spec:
   instanceSelector:
     matchLabels:
       app.kubernetes.io/part-of: metrics-stack
-  grafanaCom:
-    id: 14390
+  url: https://raw.githubusercontent.com/keycloak/keycloak-grafana-dashboard/refs/heads/main/dashboards/keycloak-troubleshooting-dashboard.json
   datasources:
     - inputName: "DS_PROMETHEUS"
       datasourceName: "prometheus"

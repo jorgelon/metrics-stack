@@ -1,0 +1,14 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: keycloak-metrics
+spec:
+  instanceSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  grafanaCom:
+    id: 14390
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "prometheus"
+  folder: "keycloak"

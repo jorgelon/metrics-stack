@@ -1,5 +1,7 @@
 resources:
-  - grafana-db.yaml
+  - grafana-db-keycloak-capacity-planning.yaml
+  - grafana-db-keycloak-metrics.yaml
+  - grafana-db-keycloak-troubleshooting.yaml
 labels:
   - pairs:
       app.kubernetes.io/name: keycloak
