@@ -5,22 +5,59 @@ metadata:
 spec:
   groups:
     - name: infisical
+      interval: 1m
       rules:
         - alert: RateLimitErrorSecretsGet
-          expr: API_errors_count{route="/api/v3/secrets/raw",method="GET",type="RateLimitError"} > 0
-          for: 10m
+          expr: increase(API_errors_count{name="RateLimitExceeded",method="GET",route="/api/v3/secrets/raw"}[5m]) > 0
+          for: 5m
           annotations:
-            summary: Rate limit error on secrets get
-            description: Rate limit error on secrets get
+            summary: RateLimitExceeded error on secret get
+            description: RateLimitExceeded error on secret get
           labels:
             severity: warning
             app: infisical
         - alert: RateLimitErrorUniversalAuthPost
-          expr: API_errors_count{route="/api/v1/auth/universal-auth/login",method="POST",type="RateLimitError"} > 0
-          for: 10m
+          expr: increase(API_errors_count{name="RateLimitExceeded",method="POST",route="/api/v1/auth/universal-auth/login"}[5m]) > 0
+          for: 5m
           labels:
             severity: warning
             app: infisical
           annotations:
-            summary: Rate limit error on universal auth post
-            description: Rate limit error on universal auth post
+            summary: RateLimitExceeded on universal auth post login
+            description: RateLimitExceeded on universal auth post login
+        - alert: RateLimitErrorRevokeToken
+          expr: increase(API_errors_count{name="RateLimitExceeded",method="POST",route="/api/v1/auth/token/revoke"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            app: infisical
+          annotations:
+            summary: RateLimitExceeded on revoke token post login
+            description: RateLimitExceeded on revoke token post login
+        - alert: GetSecretByName
+          expr: increase(API_errors_count{name="GetSecretByName",method="GET",route="/api/v3/secrets/raw/:secretName"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            app: infisical
+          annotations:
+            summary: NotFoundError error with name GetSecretByName get
+            description: NotFoundError error with name GetSecretByName get
+        - alert: "NotFoundError"
+          expr: increase(API_errors_count{name="NotFound",method="GET",route="/api/v3/secrets/raw/:secretName"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            app: infisical
+          annotations:
+            summary: NotFoundError error with name NotFound get
+            description: NotFoundError error with name NotFound get
+        - alert: "AuthTokenNotFound"
+          expr: increase(API_errors_count{name="AuthTokenNotFound",method="POST",route="/api/v1/auth/token"}[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+            app: infisical
+          annotations:
+            summary: NotFoundError error with name AuthTokenNotFound post
+            description: NotFoundError error with name AuthTokenNotFound post
