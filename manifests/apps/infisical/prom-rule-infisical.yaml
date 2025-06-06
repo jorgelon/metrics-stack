@@ -8,7 +8,7 @@ spec:
       rules:
         - alert: RateLimitErrorSecretsGet
           expr: API_errors_count{route="/api/v3/secrets/raw",method="GET",type="RateLimitError"} > 0
-          for: 2m
+          for: 10m
           annotations:
             summary: Rate limit error on secrets get
             description: Rate limit error on secrets get
@@ -17,7 +17,7 @@ spec:
             app: infisical
         - alert: RateLimitErrorUniversalAuthPost
           expr: API_errors_count{route="/api/v1/auth/universal-auth/login",method="POST",type="RateLimitError"} > 0
-          for: 2m
+          for: 10m
           labels:
             severity: warning
             app: infisical
