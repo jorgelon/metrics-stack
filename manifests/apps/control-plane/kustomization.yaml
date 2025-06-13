@@ -1,6 +1,7 @@
 resources:
   - grafana-db-api-server.yaml
   - prom-rule-control-plane.yaml
+  - prom-sm-kube-api-server-sli.yaml
   - prom-sm-kube-api-server.yaml
   - prom-sm-kubelet.yaml
     # - prom-pm-kube-controller-manager.yaml # 127.0.0.1:10257 https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/
