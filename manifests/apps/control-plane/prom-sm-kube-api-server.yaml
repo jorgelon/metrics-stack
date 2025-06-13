@@ -6,6 +6,7 @@ spec:
   jobLabel: component
   endpoints:
     - port: https
+      interval: 30s
       authorization: # use the Bearer token for authorization
         type: Bearer
         credentials:
@@ -72,6 +73,7 @@ spec:
             - __name__
             - le
     - port: https
+      interval: 5s
       path: /metrics/slis
       authorization: # use the Bearer token for authorization
         type: Bearer
