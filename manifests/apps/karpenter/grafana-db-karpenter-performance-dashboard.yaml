@@ -6,5 +6,5 @@ spec:
   instanceSelector:
     matchLabels:
       app.kubernetes.io/part-of: metrics-stack
-  url: "https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-system-coredns.json"
+  url: "https://raw.githubusercontent.com/aws/karpenter-provider-aws/refs/heads/main/website/content/en/v1.5/getting-started/getting-started-with-karpenter/karpenter-performance-dashboard.json"
   folder: "karpenter"
