@@ -11,5 +11,5 @@ spec:
     runAsNonRoot: true
     runAsUser: 1000
   serviceAccountName: alertmanager
-  alertmanagerConfigMatcherStrategy:
+  alertmanagerConfigMatcherStrategy: # disable default matcher strategy
     type: None
