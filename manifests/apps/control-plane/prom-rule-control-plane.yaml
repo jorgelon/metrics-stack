@@ -40,7 +40,7 @@ spec:
             description: "A client certificate used to authenticate to the apiserver is expiring in less than 24.0 hours.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
         - alert: KubernetesApiServerLatency
           expr: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{verb!~"(?:CONNECT|WATCHLIST|WATCH|PROXY)",verb!="LIST"} [10m])) WITHOUT (subresource)) > 2
-          for: 2m
+          for: 5m
           labels:
             severity: warning
           annotations:
