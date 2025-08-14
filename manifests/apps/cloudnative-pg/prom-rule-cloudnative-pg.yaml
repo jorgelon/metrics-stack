@@ -89,3 +89,12 @@ spec:
           for: 5m
           labels:
             severity: warning
+        - alert: CNPGRecentBackupFailed
+          annotations:
+            description: The last backup failed within the last 24 hours on cluster {{ $labels.cluster }} in namespace {{ $labels.namespace }}.
+            summary: CNPG backup has failed with error status.
+          expr: |-
+            cnpg_collector_last_failed_backup_timestamp > (time() - 86400)
+          for: 1m
+          labels:
+            severity: critical
