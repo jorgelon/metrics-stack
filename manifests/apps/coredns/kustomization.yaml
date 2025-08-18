@@ -2,3 +2,6 @@ resources:
   - grafana-db-coredns.yaml
   - prom-rule-coredns.yaml
   - prom-sm-coredns.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: coredns
