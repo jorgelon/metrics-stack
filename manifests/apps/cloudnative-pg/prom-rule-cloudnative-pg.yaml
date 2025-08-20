@@ -98,3 +98,12 @@ spec:
           for: 1m
           labels:
             severity: critical
+        - alert: CNPGConnectionsHigh
+          annotations:
+            description: "PostgreSQL instance {{ $labels.pod }} in namespace {{ $labels.namespace }} has {{ $value }} connections (80% of assumed 100 max_connections limit)."
+            summary: CNPG PostgreSQL instance connection usage is high.
+          expr: |-
+            cnpg_backends_total > 80
+          for: 2m
+          labels:
+            severity: warning
