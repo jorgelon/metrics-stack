@@ -1,4 +1,5 @@
 resources:
   - dashboards
-  - prom-rule-volumes.yaml
   - prom-rule-nodes.yaml
+  - prom-rule-recording-k8s.yaml
+  - prom-rule-volumes.yaml
