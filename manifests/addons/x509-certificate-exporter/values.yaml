@@ -1,0 +1,6 @@
+prometheusServiceMonitor:
+  extraLabels:
+    app.kubernetes.io/part-of: metrics-stack
+prometheusRules:
+  extraLabels:
+    app.kubernetes.io/part-of: metrics-stack
