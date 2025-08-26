@@ -16,7 +16,7 @@ echo
 helm search repo "$HELM_REPO_NAME/$CHART_NAME" --versions | head -n 15
 
 echo
-read -p "Enter the version you want to use: " version
+read -r -p "Enter the version you want to use: " version
 
 if [[ -z "$version" ]]; then
     echo "No version specified. Aborting."
@@ -38,7 +38,21 @@ helm template "$CHART_NAME" "$HELM_REPO_NAME/$CHART_NAME" --version "$version" -
 echo "Moving generated files to $version directory..."
 mv "$version"-temp/"$CHART_NAME"/templates "$version"
 
-echo "Adding a kustomization.yaml file inside "$version" using kustomize" 
+echo "Adding dashboard"
+cat << EOF > "$version"/grafana-db-x509-certificate-exporter.yaml
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: x509-certificate-exporter
+spec:
+  instanceSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  grafanaCom:
+    id: 13922
+EOF
+
+echo "Adding a kustomization.yaml file inside $version using kustomize" 
 cd "$version"
 kustomize create --autodetect .
 echo "Checking"

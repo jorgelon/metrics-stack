@@ -4,6 +4,7 @@ resources:
 - clusterrole.yaml
 - clusterrolebinding.yaml
 - deployment.yaml
+- grafana-db-x509-certificate-exporter.yaml
 - prometheusrule.yaml
 - service.yaml
 - serviceaccount.yaml

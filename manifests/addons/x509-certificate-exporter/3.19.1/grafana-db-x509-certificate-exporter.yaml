@@ -1,0 +1,10 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: x509-certificate-exporter
+spec:
+  instanceSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: metrics-stack
+  grafanaCom:
+    id: 13922
