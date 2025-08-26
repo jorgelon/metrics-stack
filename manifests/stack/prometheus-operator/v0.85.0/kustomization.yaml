@@ -1,0 +1,5 @@
+namespace: monitoring 
+resources:
+  - bundle.yaml
+commonAnnotations:
+  argocd.argoproj.io/sync-wave: "-5"
