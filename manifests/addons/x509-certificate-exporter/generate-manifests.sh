@@ -38,25 +38,15 @@ helm template "$CHART_NAME" "$HELM_REPO_NAME/$CHART_NAME" --version "$version" -
 echo "Moving generated files to $version directory..."
 mv "$version"-temp/"$CHART_NAME"/templates "$version"
 
-echo "Adding dashboard"
-cat << EOF > "$version"/grafana-db-x509-certificate-exporter.yaml
-apiVersion: grafana.integreatly.org/v1beta1
-kind: GrafanaDashboard
-metadata:
-  name: x509-certificate-exporter
-spec:
-  instanceSelector:
-    matchLabels:
-      app.kubernetes.io/part-of: metrics-stack
-  grafanaCom:
-    id: 13922
-EOF
-
 echo "Adding a kustomization.yaml file inside $version using kustomize" 
 cd "$version"
 kustomize create --autodetect .
 echo "Checking"
 kustomize build .
+
+echo "Getting the values.yaml for version $version..."
+helm show values "$HELM_REPO_NAME/$CHART_NAME" --version "$version" > values.yaml
+
 
 echo "Cleaning up temporary files..."
 cd ..

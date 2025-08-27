@@ -1,5 +1,6 @@
 resources:
   - 3.19.1
+  - custom
 labels:
   - pairs:
       app.kubernetes.io/name: x509-certificate-exporter

@@ -11,7 +11,6 @@ metadata:
     app.kubernetes.io/instance: x509-certificate-exporter
     app.kubernetes.io/version: "3.19.1"
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: metrics-stack
   annotations:
 spec:
   selector:
