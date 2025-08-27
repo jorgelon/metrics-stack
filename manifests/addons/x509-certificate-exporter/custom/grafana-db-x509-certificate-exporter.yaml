@@ -8,3 +8,4 @@ spec:
       app.kubernetes.io/part-of: metrics-stack
   grafanaCom:
     id: 13922
+  folder: certificates
