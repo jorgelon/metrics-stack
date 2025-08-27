@@ -1,7 +1,7 @@
 resources:
   - grafana-db-karpenter-capacity-dashboard.yaml
-  - grafana-db-karpenter-controllers-allocation.yaml
-  - grafana-db-karpenter-controllers.yaml
+  # - grafana-db-karpenter-controllers-allocation.yaml # outdated
+  # - grafana-db-karpenter-controllers.yaml # outdated
   - grafana-db-karpenter-performance-dashboard.yaml
   - prom-rule.yaml
   - prom-sm-karpenter.yaml
