@@ -1,5 +1,5 @@
 prometheusServiceMonitor:
-  enabled: false
+  create: false
 prometheusRules:
   extraLabels:
     app.kubernetes.io/part-of: metrics-stack
