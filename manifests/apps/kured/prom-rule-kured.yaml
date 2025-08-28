@@ -6,7 +6,7 @@ spec:
   groups:
     - name: kured
       rules:
-        - alert: RateLimitErrorSecretsGet
+        - alert: KuredRebootRequired
           expr: kured_reboot_required > 0
           for: 2m
           annotations:
