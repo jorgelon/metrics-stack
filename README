@@ -1,23 +1,103 @@
 # Metrics stack
 
 This is a non production and opinionated deployment of a prometheus instance with kubernetes and other applications metrics
-It is meant to be deployed under the "monitoring" namespace and a kubeadm kubernetes cluster
+It is meant to be deployed under the "monitoring" namespace and a kubeadm kubernetes cluster but it can work in other Kubernetes clusters.
 
-## For this I am using
+## Components
 
-- Kustomize
-- Prometheus Operator (official manifests)
-- Grafana Operator (official manifests)
-- Metrics server (default) or Prometheus Adapter (official manifests)
-- Kube State Metrics (hand made manifests)
-- Node exporter (hand made manifests)
-- Some argocd related settings, like waves
-- Stakater reloader annotations in grafana
+| Name                                     | Annotations           | Link                                                            |
+|------------------------------------------|-----------------------|-----------------------------------------------------------------|
+| Kustomize                                |                       | <https://github.com/kubernetes-sigs/kustomize>                    |
+| Prometheus Operator                      | (official manifests)  | <https://prometheus-operator.dev/>                                |
+| Grafana Operator                         | (official manifests)  | <https://grafana.github.io/grafana-operator/>                     |
+| Metrics server                           |                       | <https://github.com/kubernetes-sigs/metrics-server>               |
+| Kube State Metrics                       | (hand made manifests) | <https://github.com/kubernetes/kube-state-metrics>                |
+| Prometheus Node exporter                 | (hand made manifests) | <https://github.com/prometheus/node_exporter>                     |
+| Some argocd related settings             | (like waves)          | <https://argo-cd.readthedocs.io/en/stable/user-guide/sync-waves/> |
+| Stakater Reloader annotations in grafana |                       | <https://github.com/stakater/Reloader>                            |
 
 ### Additional rules and dashboards
 
-- <https://github.com/bdossantos/prometheus-alert-rules>
-- <https://samber.github.io/awesome-prometheus-alerts/rules.html>
-- <https://github.com/dotdc/grafana-dashboards-kubernetes>
-- <https://github.com/kubernetes-monitoring/kubernetes-mixin>
-- <https://monitoring.mixins.dev/>
+| Name                          | Link                                                          |
+|-------------------------------|---------------------------------------------------------------|
+| Prometheus Alert Rules        | <https://github.com/bdossantos/prometheus-alert-rules>          |
+| Awesome Prometheus Alerts     | <https://samber.github.io/awesome-prometheus-alerts/rules.html> |
+| Grafana Dashboards Kubernetes | <https://github.com/dotdc/grafana-dashboards-kubernetes>        |
+| Kubernetes Monitoring Mixin   | <https://github.com/kubernetes-monitoring/kubernetes-mixin>     |
+| Monitoring Mixins             | <https://monitoring.mixins.dev/>                                |
+
+### How to use it
+
+- Clone a tag of this repository
+- Create a kustomization.yaml that loads the stack, the desired apps and addons. See notes below about configuration in every app
+- Configure an AlertmanagerConfig resource to send alerts somewhere
+- Expose the desired services (grafana, karma, prometheus,..) using ingress, gateway api or other solution
+- Add the required label app.kubernetes.io/part-of: metrics-stack
+
+Example:
+
+```yaml
+resources:
+  - ../../releases/edge/addons/karma
+  - ../../releases/edge/apps/control-plane
+  - ../../releases/edge/apps/core
+  - ../../releases/edge/apps/coredns
+  - ../../releases/edge/stack
+  - alertmanagerconfig.yaml
+  - grafana-env.yaml
+  - ingress.yaml
+  - pvc-grafana.yaml
+patches:
+  - path: overlays/prometheus.yaml
+  - path: overlays/grafana-datasource-loki.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: metrics-stack # required
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/instance: MY-CLUSTER
+      app.kubernetes.io/version: PUT-THE-TAG-HERE
+```
+
+## Notes about stack
+
+### Prometheus
+
+The prometheus instance is very basic and with no spec.storage section. Use kustomize patches to personalize it.
+
+### Grafana
+
+- The grafana instance is deployed to use a PVC called grafana your must create before.
+- It can configured via environment variables using a secret called "grafana-env"
+- If has not being create to use more that 1 replica
+
+### Alertmanager
+
+- Create an AlertmanagerConfig resource to send alerts where you want.
+
+### Notes about apps and addons
+
+- Keycloak
+
+This stack does not includes the ServiceMonitor. You must create it.
+
+- Cloudnative PG certificates
+
+Cloudnative PG operator by default autorenew their certificates, so the x509-certificate-exporter gives false positives.
+In order to fix it you must patch the whole x509-certificate-exporter PrometheusRule modifying this lines:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: x509-certificate-exporter
+spec:
+  groups:
+    - name: "CertificateRenewal"
+          expr: (x509_cert_not_after - time()) < (28 * 86400) and x509_cert_not_after{issuer_CN!~"cnpg.*"}
+          ...
+        - alert: "CertificateExpiration"
+          expr: (x509_cert_not_after - time()) < (14 * 86400) and x509_cert_not_after{issuer_CN!~"cnpg.*"}
+          ...
+```
+
+Also you probably want to create an alertmanager config that will inhibut CertificateRenewal when CertificateExpiration is active
