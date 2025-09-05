@@ -3,11 +3,6 @@ resources:
   - prom-pm-cloudnative-pg-operator.yaml
   - prom-pm-cloudnative-pg.yaml
   - prom-rule-cloudnative-pg.yaml
-patches:
-  - path: patch-x509-certificate-exporter.yaml
-    target:
-      kind: PrometheusRule
-      name: x509-certificate-exporter
 labels:
   - pairs:
       app.kubernetes.io/name: cloudnative-pg
