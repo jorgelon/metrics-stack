@@ -1,9 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- clusterrole.yaml
-- clusterrolebinding.yaml
-- deployment.yaml
-- prometheusrule.yaml
-- service.yaml
-- serviceaccount.yaml
+- k8s-cr-x509-certificate-exporter.yaml
+- k8s-crb-x509-certificate-exporter.yaml
+- k8s-deploy-x509-certificate-exporter.yaml
+- prom-rule-x509-certificate-exporter.yaml
+- k8s-svc-x509-certificate-exporter.yaml
+- k8s-sa-x509-certificate-exporter.yaml
