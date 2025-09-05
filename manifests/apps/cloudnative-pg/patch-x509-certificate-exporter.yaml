@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: x509-certificate-exporter
+  namespace: monitoring
+spec:
+  groups:
+  - name: x509-certificate-exporter.rules
+    rules:
+    - alert: 'CertificateRenewal'
+      expr: (x509_cert_not_after - time()) < (28 * 86400) and x509_cert_not_after{issuer_CN!~"cnpg.*"}
+    - alert: 'CertificateExpiration'
+      expr: (x509_cert_not_after - time()) < (14 * 86400) and x509_cert_not_after{issuer_CN!~"cnpg.*"}
