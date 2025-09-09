@@ -1,5 +1,6 @@
 resources:
   - grafana-db-cloudnative-pg.yaml
+  - prom-amc-inhibit-cnpg.yaml
   - prom-pm-cloudnative-pg-operator.yaml
   - prom-pm-cloudnative-pg.yaml
   - prom-rule-cloudnative-pg.yaml

@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertManagerConfig
+metadata:
+  name: inhibit-cnpg
+spec:
+  inhibitRules:
+    - sourceMatch:
+        - name: alertname
+          value: CNPGConnectionsCritical
+      targetMatch:
+        - name: alertname
+          value: CNPGConnectionsWarning
+      equal:
+        - pod
+        - namespace
+        - cluster
