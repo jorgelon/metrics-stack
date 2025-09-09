@@ -5,8 +5,8 @@ It is meant to be deployed under the "monitoring" namespace and a kubeadm kubern
 
 ## Components
 
-| Name                                     | Annotations           | Link                                                            |
-|------------------------------------------|-----------------------|-----------------------------------------------------------------|
+| Name                                     | Annotations           | Link                                                              |
+|------------------------------------------|-----------------------|-------------------------------------------------------------------|
 | Kustomize                                |                       | <https://github.com/kubernetes-sigs/kustomize>                    |
 | Prometheus Operator                      | (official manifests)  | <https://prometheus-operator.dev/>                                |
 | Grafana Operator                         | (official manifests)  | <https://grafana.github.io/grafana-operator/>                     |
@@ -18,8 +18,8 @@ It is meant to be deployed under the "monitoring" namespace and a kubeadm kubern
 
 ### Additional rules and dashboards
 
-| Name                          | Link                                                          |
-|-------------------------------|---------------------------------------------------------------|
+| Name                          | Link                                                            |
+|-------------------------------|-----------------------------------------------------------------|
 | Prometheus Alert Rules        | <https://github.com/bdossantos/prometheus-alert-rules>          |
 | Awesome Prometheus Alerts     | <https://samber.github.io/awesome-prometheus-alerts/rules.html> |
 | Grafana Dashboards Kubernetes | <https://github.com/dotdc/grafana-dashboards-kubernetes>        |
