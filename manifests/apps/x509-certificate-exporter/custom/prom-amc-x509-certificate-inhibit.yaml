@@ -1,0 +1,18 @@
+---
+apiVersion: monitoring.coreos.com/v1beta1
+kind: AlertmanagerConfig
+metadata:
+  name: x509-certificate-inhibit
+spec:
+  inhibitRules:
+    - sourceMatch:
+        - name: alertname
+          value: CertificateExpiration
+      targetMatch:
+        - name: alertname
+          value: CertificateRenewal
+      equal:
+        - subject_CN
+        - filepath
+        - secret_name
+        - secret_namespace
