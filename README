@@ -58,46 +58,34 @@ labels:
       app.kubernetes.io/version: PUT-THE-TAG-HERE
 ```
 
-## Notes about stack
-
-### Prometheus
+## Prometheus
 
 The prometheus instance is very basic and with no spec.storage section. Use kustomize patches to personalize it.
 
-### Grafana
+## Grafana
 
 - The grafana instance is deployed to use a PVC called grafana your must create before.
 - It can configured via environment variables using a secret called "grafana-env"
 - If has not being create to use more that 1 replica
 
-### Alertmanager
+## Alertmanager
 
 - Create an AlertmanagerConfig resource to send alerts where you want.
 
-### Notes about apps and addons
-
-- Keycloak
+## Keycloak
 
 This stack does not includes the ServiceMonitor. You must create it.
 
-- Cloudnative PG certificates
+## x509-certificate-exporter
+
+- Cloudnative PG self signed certificates
 
 Cloudnative PG operator by default autorenew their certificates, so the x509-certificate-exporter gives false positives.
-In order to fix it you must patch the whole x509-certificate-exporter PrometheusRule modifying this lines:
+In order to ignore them you can patch the whole PrometheusRule
 
 ```yaml
-apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
-metadata:
-  name: x509-certificate-exporter
-spec:
-  groups:
-    - name: "CertificateRenewal"
-          expr: (x509_cert_not_after - time()) < (28 * 86400) and x509_cert_not_after{issuer_CN!~"cnpg.*"}
-          ...
-        - alert: "CertificateExpiration"
-          expr: (x509_cert_not_after - time()) < (14 * 86400) and x509_cert_not_after{issuer_CN!~"cnpg.*"}
-          ...
+  - alert: "CertificateRenewal"
+    expr: (x509_cert_not_after - time()) < (28 * 86400) and x509_cert_not_after{secret_name!="cnpg-webhook-cert",subject_CN!="streaming_replica"}
+  - alert: "CertificateExpiration"
+    expr: (x509_cert_not_after - time()) < (14 * 86400) and x509_cert_not_after{secret_name!="cnpg-webhook-cert",subject_CN!="streaming_replica"}
 ```
-
-Also you probably want to create an alertmanager config that will inhibut CertificateRenewal when CertificateExpiration is active
