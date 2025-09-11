@@ -89,3 +89,9 @@ In order to ignore them you can patch the whole PrometheusRule
   - alert: "CertificateExpiration"
     expr: (x509_cert_not_after - time()) < (14 * 86400) and x509_cert_not_after{secret_name!="cnpg-webhook-cert",subject_CN!="streaming_replica"}
 ```
+
+## ETCD
+
+The etcd app only includes the dashboard. You must send the metrics to prometheus to make it work. This is because sometime etcd metrics are exposed in 127.0.0.1 by default and there are different ways get that metrics. Under the etcd folder there is an approach (service and service monitor) valid when etcd metrics are exposed in 0.0.0.0
+
+The etcd dashboard is the official one but a little bit modified
