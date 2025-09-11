@@ -92,6 +92,6 @@ In order to ignore them you can patch the whole PrometheusRule
 
 ## ETCD
 
-The etcd app only includes the dashboard. You must send the metrics to prometheus to make it work. This is because sometime etcd metrics are exposed in 127.0.0.1 by default and there are different ways get that metrics. Under the etcd folder there is an approach (service and service monitor) valid when etcd metrics are exposed in 0.0.0.0
+The etcd app only works if etcd metrics are exposed in 0.0.0.0. Sometimes etcd metrics are exposed in 127.0.0.1. In that case make your own way to send the metrics to prometheus and your can use the dashboard under the etcd folder.
 
 The etcd dashboard is the official one but a little bit modified

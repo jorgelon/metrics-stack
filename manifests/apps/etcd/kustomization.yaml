@@ -1,2 +1,4 @@
 resources:
   - grafana-db-etcd.yaml
+  - k8s-svc-etcd-metrics.yaml
+  - prom-sm-etcd.yaml
