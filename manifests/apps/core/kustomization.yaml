@@ -1,5 +1,6 @@
 resources:
-  - dashboards
+  # - dashboards
+  - kubernetes-mixin/releases/chosen
   - prom-rule-nodes.yaml
   - prom-rule-recording-k8s.yaml
   - prom-rule-volumes.yaml
