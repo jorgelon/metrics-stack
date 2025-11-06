@@ -66,7 +66,8 @@ spec:
         insecureSkipVerify: true
       honorLabels: true
       relabelings:
-        - targetLabel: job # needed by kubernetes-mixin-recording
+        - action: replace
+          targetLabel: job # needed by kubernetes-mixin-recording
           replacement: cadvisor
         - action: replace
           sourceLabels:

@@ -16,7 +16,6 @@ spec:
       automountServiceAccountToken: true
       containers:
         - args:
-            - --resources=nodes,pods
             - --metric-labels-allowlist=nodes=[*]
           image: myregistry/myproject/myimage
           livenessProbe:

@@ -3,6 +3,8 @@ kind: Prometheus
 metadata:
   name: k8s
 spec:
+  externalLabels:
+    cluster: ""
   alerting:
     alertmanagers:
       - name: alertmanager-operated
