@@ -1,5 +1,5 @@
 resources:
-  - prom-sm-kube-apiserver.yaml # name needed by kubernetes mixin
+  - prom-sm-kube-apiserver.yaml
   - prom-sm-kubelet.yaml
 labels:
   - pairs:

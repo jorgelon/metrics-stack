@@ -6,7 +6,7 @@ spec:
   endpoints:
     - port: https
       interval: 30s
-      relabelings:
+      relabelings: # name needed by kubernetes mixin
         - targetLabel: job
           replacement: kube-apiserver
       authorization: # use the Bearer token for authorization
@@ -77,7 +77,7 @@ spec:
     - port: https
       interval: 5s
       path: /metrics/slis
-      relabelings:
+      relabelings: # name needed by kubernetes mixin
         - targetLabel: job
           replacement: kube-apiserver
       authorization: # use the Bearer token for authorization
