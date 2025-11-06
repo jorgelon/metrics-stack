@@ -70,11 +70,30 @@ else
   echo "Warning: Dashboards directory not found: $DASHBOARDS_DIR"
 fi
 
-echo "Generating PrometheusRule manifest"
+echo "Generating PrometheusRule manifests"
 PROMETHEUS_RULES_FILE="releases/${release}/prometheus_rules.yaml"
+PROMETHEUS_ALERTS_FILE="releases/${release}/prometheus_alerts.yaml"
+PROM_RULE_RECORDING_OUTPUT="releases/${release}/prom-rule-recording.yaml"
 PROM_RULE_OUTPUT="releases/${release}/prom-rule.yaml"
 
+# Generate recording rules
 if [ -f "$PROMETHEUS_RULES_FILE" ]; then
+  # Use yq to normalize the YAML and remove quotes
+  cat > "$PROM_RULE_RECORDING_OUTPUT" <<EOF
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubernetes-mixin-recording
+spec:
+$(yq -P '.' "$PROMETHEUS_RULES_FILE" | sed 's/^/  /')
+EOF
+  echo "Created prom-rule-recording.yaml"
+else
+  echo "Warning: Prometheus rules file not found: $PROMETHEUS_RULES_FILE"
+fi
+
+# Generate alert rules
+if [ -f "$PROMETHEUS_ALERTS_FILE" ]; then
   # Use yq to normalize the YAML and remove quotes
   cat > "$PROM_RULE_OUTPUT" <<EOF
 apiVersion: monitoring.coreos.com/v1
@@ -82,11 +101,11 @@ kind: PrometheusRule
 metadata:
   name: kubernetes-mixin
 spec:
-$(yq -P '.' "$PROMETHEUS_RULES_FILE" | sed 's/^/  /')
+$(yq -P '.' "$PROMETHEUS_ALERTS_FILE" | sed 's/^/  /')
 EOF
   echo "Created prom-rule.yaml"
 else
-  echo "Warning: Prometheus rules file not found: $PROMETHEUS_RULES_FILE"
+  echo "Warning: Prometheus alerts file not found: $PROMETHEUS_ALERTS_FILE"
 fi
 
 echo "Creating kustomization.yaml in release directory"
@@ -97,6 +116,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - prom-rule.yaml
+  - prom-rule-recording.yaml
   - dashboards
 EOF
 cd - > /dev/null
