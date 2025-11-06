@@ -1,0 +1,6 @@
+resources:
+  - prom-sm-kube-apiserver.yaml # name needed by kubernetes mixin
+  - prom-sm-kubelet.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: control-plane

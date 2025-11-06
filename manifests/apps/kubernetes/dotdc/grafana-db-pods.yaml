@@ -1,10 +1,11 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  name: global
+  name: pods
 spec:
   instanceSelector:
     matchLabels:
       app.kubernetes.io/part-of: metrics-stack
-  url: "https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-global.json"
   folder: dotdc
+  grafanaCom:
+    id: 15760

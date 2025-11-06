@@ -6,5 +6,6 @@ spec:
   instanceSelector:
     matchLabels:
       app.kubernetes.io/part-of: metrics-stack
-  url: "https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-nodes.json"
   folder: dotdc
+  grafanaCom:
+    id: 15759

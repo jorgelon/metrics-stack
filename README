@@ -16,15 +16,44 @@ It is meant to be deployed under the "monitoring" namespace and a kubeadm kubern
 | Some argocd related settings             | (like waves)          | <https://argo-cd.readthedocs.io/en/stable/user-guide/sync-waves/> |
 | Stakater Reloader annotations in grafana |                       | <https://github.com/stakater/Reloader>                            |
 
+### Mixins
+
+- Monitoring Mixins
+
+<https://monitoring.mixins.dev/>
+
+It contains the Kubernetes Monitoring mixins
+
+- Kubernetes Monitoring
+- kubernetes autoscaling
+- node exporter
+
+and for other applications:
+
+- argocd
+- cert-manager
+- etcd
+
+And for metrics stack componentes
+
+- alertmanager
+- Kube state metrics
+- prometheus
+- prometheus-operator
+
 ### Additional rules and dashboards
 
-| Name                          | Link                                                            |
-|-------------------------------|-----------------------------------------------------------------|
-| Prometheus Alert Rules        | <https://github.com/bdossantos/prometheus-alert-rules>          |
-| Awesome Prometheus Alerts     | <https://samber.github.io/awesome-prometheus-alerts/rules.html> |
-| Grafana Dashboards Kubernetes | <https://github.com/dotdc/grafana-dashboards-kubernetes>        |
-| Kubernetes Monitoring Mixin   | <https://github.com/kubernetes-monitoring/kubernetes-mixin>     |
-| Monitoring Mixins             | <https://monitoring.mixins.dev/>                                |
+- bdossantos alert rules
+
+<https://github.com/bdossantos/prometheus-alert-rules>
+
+- Awesome Prometheus Alerts  
+
+<https://samber.github.io/awesome-prometheus-alerts/>
+
+- Doctdc grafana dashboards
+
+<https://github.com/dotdc/grafana-dashboards-kubernetes>
 
 ### How to use it
 
@@ -39,9 +68,9 @@ Example:
 ```yaml
 resources:
   - ../../releases/edge/addons/karma
-  - ../../releases/edge/apps/control-plane
   - ../../releases/edge/apps/core
   - ../../releases/edge/apps/coredns
+  - ../../releases/edge/apps/kubernetes
   - ../../releases/edge/stack
   - alertmanagerconfig.yaml
   - grafana-env.yaml

@@ -1,5 +1,5 @@
 resources:
-  - grafana-db-coredns.yaml
+  - grafana-db-coredns.yaml # dotdc
   - prom-rule-coredns.yaml
   - prom-sm-coredns.yaml
 labels:
