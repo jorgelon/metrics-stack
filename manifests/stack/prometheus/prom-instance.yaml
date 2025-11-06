@@ -3,8 +3,12 @@ kind: Prometheus
 metadata:
   name: k8s
 spec:
-  externalLabels: # needed by mixins
-    cluster: "local"
+  scrapeClasses: # needed by mixins for local queries
+    - name: default-cluster
+      default: true
+      relabelings:
+        - targetLabel: cluster
+          replacement: "local"
   alerting:
     alertmanagers:
       - name: alertmanager-operated
