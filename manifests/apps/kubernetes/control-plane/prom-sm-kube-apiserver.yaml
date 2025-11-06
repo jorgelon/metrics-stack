@@ -3,7 +3,6 @@ kind: ServiceMonitor
 metadata:
   name: kube-apiserver
 spec:
-  jobLabel: component
   endpoints:
     - port: https
       interval: 30s
