@@ -9,6 +9,7 @@ spec:
       relabelings: # name needed by kubernetes mixin
         - targetLabel: job
           replacement: kube-apiserver
+          action: replace
       authorization: # use the Bearer token for authorization
         type: Bearer
         credentials:
@@ -80,6 +81,7 @@ spec:
       relabelings: # name needed by kubernetes mixin
         - targetLabel: job
           replacement: kube-apiserver
+          action: replace
       authorization: # use the Bearer token for authorization
         type: Bearer
         credentials:
