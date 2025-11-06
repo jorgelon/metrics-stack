@@ -1,4 +1,4 @@
 resources:
   - control-plane
   - dotdc
-  - kubernetes-mixin
+  - kubernetes-mixin/releases/chosen
