@@ -3,23 +3,34 @@ kind: AlertmanagerConfig
 metadata:
   name: x509-certificate-inhibit
 spec:
+  route:
+    receiver: 'null'
+    groupBy: ['alertname', 'subject_CN']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    routes:
+      - matchers:
+          - name: alertname
+            value: CertificateRenewal
+            matchType: '='
+        receiver: 'null'
+        groupBy: ['alertname', 'subject_CN']
+        continue: true
+      - matchers:
+          - name: alertname
+            value: CertificateExpiration
+            matchType: '='
+        receiver: 'null'
+        groupBy: ['alertname', 'subject_CN']
+        continue: true
+  receivers:
+    - name: 'null'
   inhibitRules:
     # When CertificateExpiration fires, suppress CertificateRenewal for same cert
     - sourceMatch:
         - name: alertname
           value: CertificateExpiration
-      targetMatch:
-        - name: alertname
-          value: CertificateRenewal
-      equal:
-        - subject_CN
-        - filepath
-        - secret_name
-        - secret_namespace
-    # When multiple CertificateRenewal alerts exist for same subject_CN, keep only one
-    - sourceMatch:
-        - name: alertname
-          value: CertificateRenewal
       targetMatch:
         - name: alertname
           value: CertificateRenewal
