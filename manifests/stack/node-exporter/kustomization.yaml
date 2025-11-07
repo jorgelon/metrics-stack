@@ -6,11 +6,12 @@ resources:
   - k8s-secret-node-exporter-sa-token.yaml
   - k8s-svc-node-exporter.yaml
   - prom-sm-node-exporter.yaml
+  - prom-rule-node-exporter.yaml
 images:
   - name: quay.io/brancz/kube-rbac-proxy
-    newTag: v0.19.0
+    newTag: v0.20.0
   - name: quay.io/prometheus/node-exporter
-    newTag: v1.9.1
+    newTag: v1.10.2
 labels:
   - pairs:
       app.kubernetes.io/name: node-exporter
