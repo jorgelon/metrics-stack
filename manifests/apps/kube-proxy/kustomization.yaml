@@ -1,6 +1,5 @@
 resources:
-  - k8s-svc.yaml
-  - prom-sm-kube-proxy.yaml
+  - prom-pm-kube-proxy.yaml
 labels:
   - pairs:
       app.kubernetes.io/name: control-plane
