@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kube-proxy
+spec:
+  jobLabel: app.kubernetes.io/name
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      scheme: http
+      honorLabels: true
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __metrics_path__
+          targetLabel: metrics_path
+      # from kube-prometheus
+      metricRelabelings:
+        - action: drop
+          regex: kubeproxy_sync_proxy_rules_latency_microseconds
+          sourceLabels:
+            - __name__
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kube-proxy
+  namespaceSelector:
+    matchNames:
+      - kube-system
