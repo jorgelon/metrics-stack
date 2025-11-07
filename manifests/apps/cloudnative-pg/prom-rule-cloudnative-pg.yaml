@@ -103,7 +103,7 @@ spec:
             description: "PostgreSQL instance {{ $labels.pod }} in namespace {{ $labels.namespace }} is using {{ printf \"%.1f\" $value }}% of max_connections limit."
             summary: CNPG PostgreSQL instance connection usage is high.
           expr: |-
-            100 * cnpg_backends_total / on(pod) cnpg_pg_settings_setting{name="max_connections"} > 75
+            100 * cnpg_backends_total / on(pod) group_left cnpg_pg_settings_setting{name="max_connections"} > 75
           for: 2m
           labels:
             severity: warning
@@ -112,7 +112,7 @@ spec:
             description: "PostgreSQL instance {{ $labels.pod }} in namespace {{ $labels.namespace }} is using {{ printf \"%.1f\" $value }}% of max_connections limit."
             summary: CNPG PostgreSQL instance connection usage is critical.
           expr: |-
-            100 * cnpg_backends_total / on(pod) cnpg_pg_settings_setting{name="max_connections"} > 90
+            100 * cnpg_backends_total / on(pod) group_left cnpg_pg_settings_setting{name="max_connections"} > 90
           for: 1m
           labels:
             severity: critical

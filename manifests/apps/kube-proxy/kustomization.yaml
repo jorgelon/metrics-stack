@@ -1,5 +1,0 @@
-resources:
-  - prom-pm-kube-proxy.yaml
-labels:
-  - pairs:
-      app.kubernetes.io/name: control-plane
