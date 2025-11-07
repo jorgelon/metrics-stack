@@ -11,7 +11,7 @@ spec:
     matchLabels:
       k8s-app: kube-proxy
   podMetricsEndpoints:
-    - port: 10249
+    - targetPort: 10249
       path: /metrics
       scheme: http
       relabelings:
