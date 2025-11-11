@@ -34,11 +34,10 @@ spec:
           name: node-exporter
           resources:
             limits:
-              cpu: 250m
-              memory: 180Mi
+              memory: 250Mi
             requests:
-              cpu: 102m
-              memory: 180Mi
+              cpu: 100m
+              memory: 250Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
