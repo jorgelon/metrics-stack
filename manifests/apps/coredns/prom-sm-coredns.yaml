@@ -3,7 +3,7 @@ kind: ServiceMonitor
 metadata:
   name: coredns
 spec:
-  jobLabel: kubernetes.io/name
+  jobLabel: k8s-app
   endpoints:
     - port: metrics
       authorization: # use the Bearer token for authorization
