@@ -27,7 +27,8 @@ spec:
             severity: critical
         - alert: CoreDNSLatencyHigh
           annotations:
-            description: CoreDNS has 99th percentile latency of {{ $value }} seconds for
+            description:
+              CoreDNS has 99th percentile latency of {{ $value }} seconds for
               server {{ $labels.server }} zone {{ $labels.zone }} .
             runbook_url: https://github.com/povilasv/coredns-mixin/tree/master/runbook.md#alert-name-corednslatencyhigh
             summary: CoreDNS is experiencing high 99th percentile latency.
@@ -38,8 +39,7 @@ spec:
             severity: critical
         - alert: CoreDNSErrorsHigh
           annotations:
-            description: CoreDNS is returning SERVFAIL for {{ $value | humanizePercentage
-              }} of requests.
+            description: CoreDNS is returning SERVFAIL for {{ $value | humanizePercentage }} of requests.
             runbook_url: https://github.com/povilasv/coredns-mixin/tree/master/runbook.md#alert-name-corednserrorshigh
             summary: CoreDNS is returning SERVFAIL.
           expr: |
@@ -51,8 +51,7 @@ spec:
             severity: critical
         - alert: CoreDNSErrorsHigh
           annotations:
-            description: CoreDNS is returning SERVFAIL for {{ $value | humanizePercentage
-              }} of requests.
+            description: CoreDNS is returning SERVFAIL for {{ $value | humanizePercentage }} of requests.
             runbook_url: https://github.com/povilasv/coredns-mixin/tree/master/runbook.md#alert-name-corednserrorshigh
             summary: CoreDNS is returning SERVFAIL.
           expr: |
@@ -62,11 +61,12 @@ spec:
           for: 10m
           labels:
             severity: warning
-      - name: coredns_forward
-        rules:
+    - name: coredns_forward
+      rules:
         - alert: CoreDNSForwardLatencyHigh
           annotations:
-            description: CoreDNS has 99th percentile latency of {{ $value }} seconds forwarding
+            description:
+              CoreDNS has 99th percentile latency of {{ $value }} seconds forwarding
               requests to {{ $labels.to }}.
             runbook_url: https://github.com/povilasv/coredns-mixin/tree/master/runbook.md#alert-name-corednsforwardlatencyhigh
             summary: CoreDNS is experiencing high latency forwarding requests.
@@ -77,8 +77,7 @@ spec:
             severity: critical
         - alert: CoreDNSForwardErrorsHigh
           annotations:
-            description: CoreDNS is returning SERVFAIL for {{ $value | humanizePercentage
-              }} of forward requests to {{ $labels.to }}.
+            description: CoreDNS is returning SERVFAIL for {{ $value | humanizePercentage }} of forward requests to {{ $labels.to }}.
             runbook_url: https://github.com/povilasv/coredns-mixin/tree/master/runbook.md#alert-name-corednsforwarderrorshigh
             summary: CoreDNS is returning SERVFAIL for forward requests.
           expr: |
@@ -90,8 +89,7 @@ spec:
             severity: critical
         - alert: CoreDNSForwardErrorsHigh
           annotations:
-            description: CoreDNS is returning SERVFAIL for {{ $value | humanizePercentage
-              }} of forward requests to {{ $labels.to }}.
+            description: CoreDNS is returning SERVFAIL for {{ $value | humanizePercentage }} of forward requests to {{ $labels.to }}.
             runbook_url: https://github.com/povilasv/coredns-mixin/tree/master/runbook.md#alert-name-corednsforwarderrorshigh
             summary: CoreDNS is returning SERVFAIL for forward requests.
           expr: |
@@ -103,8 +101,7 @@ spec:
             severity: warning
         - alert: CoreDNSForwardHealthcheckFailureCount
           annotations:
-            description: CoreDNS health checks have failed to upstream server {{ $labels.to
-              }}.
+            description: CoreDNS health checks have failed to upstream server {{ $labels.to }}.
             runbook_url: https://github.com/povilasv/coredns-mixin/tree/master/runbook.md#alert-name-corednsforwardhealthcheckfailurecount
             summary: CoreDNS health checks have failed to upstream server.
           expr: |
