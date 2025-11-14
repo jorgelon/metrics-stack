@@ -34,9 +34,11 @@ spec:
               cpu: 10m
               memory: 25Mi
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /healthz
               port: http
             failureThreshold: 5
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /healthz
               port: http
