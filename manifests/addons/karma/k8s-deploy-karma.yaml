@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: karma
+  annotations:
+    configmap.reloader.stakater.com/reload: "karma-config"
 spec:
   selector:
     matchLabels:
@@ -21,6 +23,10 @@ spec:
           env:
             - name: ALERTMANAGER_URI
               value: http://alertmanager-operated:9093
+          envFrom:
+            - configMapRef:
+                name: karma-config
+                optional: true
           resources:
             limits:
               memory: 150Mi
