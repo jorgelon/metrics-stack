@@ -35,10 +35,10 @@ spec:
               memory: 25Mi
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /health
               port: http
             failureThreshold: 5
           readinessProbe:
             httpGet:
-              path: /healthz
+              path: /health
               port: http
