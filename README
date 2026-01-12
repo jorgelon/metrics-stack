@@ -93,7 +93,11 @@ The prometheus instance is very basic and with no spec.storage section. Use kust
 
 ### Cluster Label and Scrape Classes
 
-The Prometheus instance uses a default scrape class that conditionally adds `cluster="local"` to scraped metrics **only if they don't already have a cluster label**. This configuration:
+The Prometheus instance uses scrape classes to manage the cluster label for different types of metrics:
+
+#### Default Scrape Class
+
+The default scrape class conditionally adds `cluster="local"` to scraped metrics **only if they don't already have a cluster label**:
 
 ```yaml
 scrapeClasses:
@@ -103,15 +107,22 @@ scrapeClasses:
       - action: replace
         targetLabel: cluster
         replacement: "local"
-        regex: ^$
+        regex: ^$  # Only match if cluster label is not set
         sourceLabels:
           - cluster
 ```
 
-This approach ensures:
+This ensures:
+
 - Kubernetes-mixin dashboards work correctly (receive `cluster="local"` for core k8s metrics)
-- Applications that export their own cluster label keep it (e.g., CloudNative-PG cluster names are preserved)
-- No need for per-application metricRelabelings configuration
+- Metrics that already export a cluster label keep their original value
+- No need for per-application metricRelabelings configuration in most cases
+
+#### CNPG Scrape Class
+
+CloudNative-PG requires a special scrape class that sets the cluster label from the PostgreSQL cluster name (pod label `cnpg.io/cluster`):
+
+CNPG PodMonitors explicitly reference this scrape class with `scrapeClass: no-cluster-label`. This ensures the CNPG dashboard receives metrics labeled with the actual PostgreSQL cluster name (e.g., `cluster="cnpg-infisical"`) instead of `cluster="local"`.
 
 ## Grafana
 

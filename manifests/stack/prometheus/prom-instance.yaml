@@ -10,9 +10,15 @@ spec:
         - action: replace
           targetLabel: cluster
           replacement: "local"
-          regex: ^$ # only match is cluster label is not set. fixes cnpg dashboard
+          regex: ^$ # only match is cluster label is not set
           sourceLabels:
             - cluster
+    - name: no-cluster-label # for CNPG metrics - sets cluster from pod label
+      relabelings:
+        - sourceLabels:
+            - __meta_kubernetes_pod_label_cnpg_io_cluster
+          targetLabel: cluster
+          action: replace
   alerting:
     alertmanagers:
       - name: alertmanager-operated

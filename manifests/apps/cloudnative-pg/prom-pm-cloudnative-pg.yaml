@@ -4,6 +4,7 @@ metadata:
   name: cloudnative-pg
 spec:
   jobLabel: app.kubernetes.io/name
+  scrapeClass: no-cluster-label
   selector:
     matchLabels:
       cnpg.io/podRole: instance
