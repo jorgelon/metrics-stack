@@ -10,6 +10,9 @@ spec:
         - action: replace
           targetLabel: cluster
           replacement: "local"
+    - name: no-cluster-label
+      default: false
+      # No relabelings - metrics scraped without adding cluster label
   alerting:
     alertmanagers:
       - name: alertmanager-operated

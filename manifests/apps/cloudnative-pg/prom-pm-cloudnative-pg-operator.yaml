@@ -4,6 +4,7 @@ metadata:
   name: cloudnative-pg-operator
 spec:
   jobLabel: app.kubernetes.io/name
+  scrapeClassName: no-cluster-label
   selector:
     matchLabels:
       app.kubernetes.io/name: cloudnative-pg
