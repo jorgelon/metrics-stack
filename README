@@ -123,7 +123,7 @@ This ensures:
 CloudNative-PG PostgreSQL instances require a special scrape class that sets the cluster label from the PostgreSQL cluster name (pod label `cnpg.io/cluster`):
 
 ```yaml
-  - name: no-cluster-label
+  - name: cnpg
     relabelings:
       - sourceLabels:
           - __meta_kubernetes_pod_label_cnpg_io_cluster
@@ -131,7 +131,7 @@ CloudNative-PG PostgreSQL instances require a special scrape class that sets the
         action: replace
 ```
 
-The CNPG **instance** PodMonitor explicitly references this scrape class with `scrapeClass: no-cluster-label`. This ensures the CNPG dashboard receives metrics labeled with the actual PostgreSQL cluster name (e.g., `cluster="cnpg-infisical"`) instead of `cluster="local"`.
+The CNPG **instance** PodMonitor explicitly references this scrape class with `scrapeClass: cnpg`. This ensures the CNPG dashboard receives metrics labeled with the actual PostgreSQL cluster name (e.g., `cluster="cnpg-designer"`) instead of `cluster="local"`.
 
 The CNPG **operator** PodMonitor uses the default scrapeClass (adds `cluster="local"`) because the operator manages all PostgreSQL clusters and doesn't have cluster-specific metrics.
 
