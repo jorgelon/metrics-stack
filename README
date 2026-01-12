@@ -91,25 +91,27 @@ labels:
 
 The prometheus instance is very basic and with no spec.storage section. Use kustomize patches to personalize it.
 
-### Scrape Classes
+### Cluster Label and Scrape Classes
 
-The Prometheus instance defines two scrape classes to handle different labeling requirements:
-
-1. **default-cluster** (default): Adds `cluster="local"` label to all scraped metrics
-   - Required for kubernetes-mixin pre-compiled dashboards (which expect cluster label)
-   - Applied to all ServiceMonitors and PodMonitors by default
-
-2. **no-cluster-label**: Scrapes metrics without adding cluster label
-   - Used for third-party dashboards that don't expect the cluster label
-   - Must be explicitly configured: add `scrapeClassName: no-cluster-label` to ServiceMonitor/PodMonitor spec
-   - Example: CloudNative-PG uses this to maintain compatibility with upstream dashboards
-
-If you need to use upstream dashboards that don't expect a cluster label, add this to your monitoring resource:
+The Prometheus instance uses a default scrape class that conditionally adds `cluster="local"` to scraped metrics **only if they don't already have a cluster label**. This configuration:
 
 ```yaml
-spec:
-  scrapeClassName: no-cluster-label
+scrapeClasses:
+  - name: default-cluster
+    default: true
+    relabelings:
+      - action: replace
+        targetLabel: cluster
+        replacement: "local"
+        regex: ^$
+        sourceLabels:
+          - cluster
 ```
+
+This approach ensures:
+- Kubernetes-mixin dashboards work correctly (receive `cluster="local"` for core k8s metrics)
+- Applications that export their own cluster label keep it (e.g., CloudNative-PG cluster names are preserved)
+- No need for per-application metricRelabelings configuration
 
 ## Grafana
 
