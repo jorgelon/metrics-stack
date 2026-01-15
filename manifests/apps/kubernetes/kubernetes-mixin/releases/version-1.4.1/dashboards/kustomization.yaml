@@ -1,20 +1,20 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- grafana-db-apiserver.yaml
-- grafana-db-cluster-total.yaml
-- grafana-db-controller-manager.yaml
-- grafana-db-k8s-resources-cluster.yaml
-- grafana-db-k8s-resources-namespace.yaml
-- grafana-db-k8s-resources-node.yaml
-- grafana-db-k8s-resources-pod.yaml
-- grafana-db-k8s-resources-workload.yaml
-- grafana-db-k8s-resources-workloads-namespace.yaml
-- grafana-db-kubelet.yaml
-- grafana-db-namespace-by-pod.yaml
-- grafana-db-namespace-by-workload.yaml
-- grafana-db-persistentvolumesusage.yaml
-- grafana-db-pod-total.yaml
-- grafana-db-proxy.yaml
-- grafana-db-scheduler.yaml
-- grafana-db-workload-total.yaml
+  - grafana-db-apiserver.yaml
+  - grafana-db-cluster-total.yaml
+  # - grafana-db-controller-manager.yaml
+  - grafana-db-k8s-resources-cluster.yaml
+  - grafana-db-k8s-resources-namespace.yaml
+  - grafana-db-k8s-resources-node.yaml
+  - grafana-db-k8s-resources-pod.yaml
+  - grafana-db-k8s-resources-workload.yaml
+  - grafana-db-k8s-resources-workloads-namespace.yaml
+  - grafana-db-kubelet.yaml
+  - grafana-db-namespace-by-pod.yaml
+  - grafana-db-namespace-by-workload.yaml
+  - grafana-db-persistentvolumesusage.yaml
+  - grafana-db-pod-total.yaml
+  # - grafana-db-proxy.yaml
+  # - grafana-db-scheduler.yaml
+  - grafana-db-workload-total.yaml
