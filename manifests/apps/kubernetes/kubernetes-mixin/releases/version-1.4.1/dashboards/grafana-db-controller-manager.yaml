@@ -52,7 +52,7 @@ spec:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "sum(up{cluster=\"$cluster\", job=\"kube-controller-manager\"})",
+              "expr": "sum(up{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\"})",
               "instant": true
             }
           ],
@@ -103,8 +103,8 @@ spec:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "sum(rate(workqueue_adds_total{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, name)",
-              "legendFormat": "{{cluster}} {{instance}} {{name}}"
+              "expr": "sum(rate(workqueue_adds_total{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval])) by (k8s_cluster, instance, name)",
+              "legendFormat": "{{k8s_cluster}} {{instance}} {{name}}"
             }
           ],
           "title": "Work Queue Add Rate",
@@ -154,8 +154,8 @@ spec:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "sum(rate(workqueue_depth{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, name)",
-              "legendFormat": "{{cluster}} {{instance}} {{name}}"
+              "expr": "sum(rate(workqueue_depth{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval])) by (k8s_cluster, instance, name)",
+              "legendFormat": "{{k8s_cluster}} {{instance}} {{name}}"
             }
           ],
           "title": "Work Queue Depth",
@@ -205,8 +205,8 @@ spec:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "histogram_quantile(0.99, sum(rate(workqueue_queue_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, name, le))",
-              "legendFormat": "{{cluster}} {{instance}} {{name}}"
+              "expr": "histogram_quantile(0.99, sum(rate(workqueue_queue_duration_seconds_bucket{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval])) by (k8s_cluster, instance, name, le))",
+              "legendFormat": "{{k8s_cluster}} {{instance}} {{name}}"
             }
           ],
           "title": "Work Queue Latency",
@@ -331,7 +331,7 @@ spec:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\", verb=\"POST\"}[$__rate_interval])) by (verb, le))",
+              "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\", verb=\"POST\"}[$__rate_interval])) by (verb, le))",
               "legendFormat": "{{verb}}"
             }
           ],
@@ -382,7 +382,7 @@ spec:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, le))",
+              "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, le))",
               "legendFormat": "{{verb}}"
             }
           ],
@@ -433,7 +433,7 @@ spec:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "process_resident_memory_bytes{cluster=\"$cluster\", job=\"kube-controller-manager\",instance=~\"$instance\"}",
+              "expr": "process_resident_memory_bytes{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\",instance=~\"$instance\"}",
               "legendFormat": "{{instance}}"
             }
           ],
@@ -484,7 +484,7 @@ spec:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\", job=\"kube-controller-manager\",instance=~\"$instance\"}[$__rate_interval])",
+              "expr": "rate(process_cpu_seconds_total{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\",instance=~\"$instance\"}[$__rate_interval])",
               "legendFormat": "{{instance}}"
             }
           ],
@@ -535,7 +535,7 @@ spec:
                 "type": "prometheus",
                 "uid": "${datasource}"
               },
-              "expr": "go_goroutines{cluster=\"$cluster\", job=\"kube-controller-manager\",instance=~\"$instance\"}",
+              "expr": "go_goroutines{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\",instance=~\"$instance\"}",
               "legendFormat": "{{instance}}"
             }
           ],
@@ -571,7 +571,7 @@ spec:
             "hide": 2,
             "label": "cluster",
             "name": "cluster",
-            "query": "label_values(up{job=\"kube-controller-manager\"}, cluster)",
+            "query": "label_values(up{job=\"kube-controller-manager\"}, k8s_cluster)",
             "refresh": 2,
             "sort": 1,
             "type": "query"
@@ -585,7 +585,7 @@ spec:
             "includeAll": true,
             "label": "instance",
             "name": "instance",
-            "query": "label_values(up{cluster=\"$cluster\", job=\"kube-controller-manager\"}, instance)",
+            "query": "label_values(up{k8s_cluster=\"$cluster\", job=\"kube-controller-manager\"}, instance)",
             "refresh": 2,
             "sort": 1,
             "type": "query"

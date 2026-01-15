@@ -22,11 +22,11 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodnotready
             summary: Pod has been in a non-ready state for more than 15 minutes.
           expr: |
-            sum by (namespace, pod, job, cluster) (
-              max by(namespace, pod, job, cluster) (
+            sum by (namespace, pod, job, k8s_cluster) (
+              max by(namespace, pod, job, k8s_cluster) (
                 kube_pod_status_phase{job="kube-state-metrics", phase=~"Pending|Unknown"}
-              ) * on(namespace, pod, cluster) group_left(owner_kind) topk by(namespace, pod, cluster) (
-                1, max by(namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!="Job"})
+              ) * on(namespace, pod, k8s_cluster) group_left(owner_kind) topk by(namespace, pod, k8s_cluster) (
+                1, max by(namespace, pod, owner_kind, k8s_cluster) (kube_pod_owner{owner_kind!="Job"})
               )
             ) > 0
           for: 15m
@@ -110,18 +110,18 @@ spec:
             summary: StatefulSet update has not been rolled out.
           expr: |
             (
-              max by(namespace, statefulset, job, cluster) (
+              max by(namespace, statefulset, job, k8s_cluster) (
                 kube_statefulset_status_current_revision{job="kube-state-metrics"}
                   unless
                 kube_statefulset_status_update_revision{job="kube-state-metrics"}
               )
-                * on(namespace, statefulset, job, cluster)
+                * on(namespace, statefulset, job, k8s_cluster)
               (
                 kube_statefulset_replicas{job="kube-state-metrics"}
                   !=
                 kube_statefulset_status_replicas_updated{job="kube-state-metrics"}
               )
-            )  and on(namespace, statefulset, job, cluster) (
+            )  and on(namespace, statefulset, job, k8s_cluster) (
               changes(kube_statefulset_status_replicas_updated{job="kube-state-metrics"}[5m])
                 ==
               0
@@ -199,7 +199,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobnotcompleted
             summary: Job did not complete in time
           expr: |
-            time() - max by(namespace, job_name, cluster) (kube_job_status_start_time{job="kube-state-metrics"}
+            time() - max by(namespace, job_name, k8s_cluster) (kube_job_status_start_time{job="kube-state-metrics"}
               and
             kube_job_status_active{job="kube-state-metrics"} > 0) > 43200
           labels:
@@ -372,7 +372,7 @@ spec:
             max without (instance, job, type) (
               kube_resourcequota{job="kube-state-metrics", type="used"}
             )
-            / on (cluster, namespace, resource, resourcequota) group_left()
+            / on (k8s_cluster, namespace, resource, resourcequota) group_left()
             (
               max without (instance, job, type) (
                 kube_resourcequota{job="kube-state-metrics", type="hard"}
@@ -391,7 +391,7 @@ spec:
             max without (instance, job, type) (
               kube_resourcequota{job="kube-state-metrics", type="used"}
             )
-            / on (cluster, namespace, resource, resourcequota) group_left()
+            / on (k8s_cluster, namespace, resource, resourcequota) group_left()
             (
               max without (instance, job, type) (
                 kube_resourcequota{job="kube-state-metrics", type="hard"}
@@ -410,7 +410,7 @@ spec:
             max without (instance, job, type) (
               kube_resourcequota{job="kube-state-metrics", type="used"}
             )
-            / on (cluster, namespace, resource, resourcequota) group_left()
+            / on (k8s_cluster, namespace, resource, resourcequota) group_left()
             (
               max without (instance, job, type) (
                 kube_resourcequota{job="kube-state-metrics", type="hard"}
@@ -426,15 +426,15 @@ spec:
             summary: Processes experience elevated CPU throttling.
           expr: |
             sum without (id, metrics_path, name, image, endpoint, job, node) (
-              topk by (cluster, namespace, pod, container, instance) (1,
+              topk by (k8s_cluster, namespace, pod, container, instance) (1,
                 increase(
                   container_cpu_cfs_throttled_periods_total{container!="", job="cadvisor", }
                 [5m])
               )
             )
-            / on (cluster, namespace, pod, container, instance) group_left
+            / on (k8s_cluster, namespace, pod, container, instance) group_left
             sum without (id, metrics_path, name, image, endpoint, job, node) (
-              topk by (cluster, namespace, pod, container, instance) (1,
+              topk by (k8s_cluster, namespace, pod, container, instance) (1,
                 increase(
                   container_cpu_cfs_periods_total{job="cadvisor", }
                 [5m])
@@ -448,7 +448,7 @@ spec:
       rules:
         - alert: KubePersistentVolumeFillingUp
           annotations:
-            description: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{ with $labels.cluster -}} on Cluster {{ . }} {{- end }} is only {{ $value | humanizePercentage }} free.
+            description: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{ with $labels.k8s_cluster -}} on Cluster {{ . }} {{- end }} is only {{ $value | humanizePercentage }} free.
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefillingup
             summary: PersistentVolume is filling up.
           expr: |
@@ -459,16 +459,16 @@ spec:
             ) < 0.03
             and
             kubelet_volume_stats_used_bytes{job="kubelet"} > 0
-            unless on(cluster, namespace, persistentvolumeclaim)
+            unless on(k8s_cluster, namespace, persistentvolumeclaim)
             kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
-            unless on(cluster, namespace, persistentvolumeclaim)
+            unless on(k8s_cluster, namespace, persistentvolumeclaim)
             kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
           for: 1m
           labels:
             severity: critical
         - alert: KubePersistentVolumeFillingUp
           annotations:
-            description: Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{ with $labels.cluster -}} on Cluster {{ . }} {{- end }} is expected to fill up within four days. Currently {{ $value | humanizePercentage }} is available.
+            description: Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{ with $labels.k8s_cluster -}} on Cluster {{ . }} {{- end }} is expected to fill up within four days. Currently {{ $value | humanizePercentage }} is available.
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefillingup
             summary: PersistentVolume is filling up.
           expr: |
@@ -481,16 +481,16 @@ spec:
             kubelet_volume_stats_used_bytes{job="kubelet"} > 0
             and
             predict_linear(kubelet_volume_stats_available_bytes{job="kubelet"}[6h], 4 * 24 * 3600) < 0
-            unless on(cluster, namespace, persistentvolumeclaim)
+            unless on(k8s_cluster, namespace, persistentvolumeclaim)
             kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
-            unless on(cluster, namespace, persistentvolumeclaim)
+            unless on(k8s_cluster, namespace, persistentvolumeclaim)
             kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
           for: 1h
           labels:
             severity: warning
         - alert: KubePersistentVolumeInodesFillingUp
           annotations:
-            description: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{ with $labels.cluster -}} on Cluster {{ . }} {{- end }} only has {{ $value | humanizePercentage }} free inodes.
+            description: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{ with $labels.k8s_cluster -}} on Cluster {{ . }} {{- end }} only has {{ $value | humanizePercentage }} free inodes.
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumeinodesfillingup
             summary: PersistentVolumeInodes are filling up.
           expr: |
@@ -501,16 +501,16 @@ spec:
             ) < 0.03
             and
             kubelet_volume_stats_inodes_used{job="kubelet"} > 0
-            unless on(cluster, namespace, persistentvolumeclaim)
+            unless on(k8s_cluster, namespace, persistentvolumeclaim)
             kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
-            unless on(cluster, namespace, persistentvolumeclaim)
+            unless on(k8s_cluster, namespace, persistentvolumeclaim)
             kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
           for: 1m
           labels:
             severity: critical
         - alert: KubePersistentVolumeInodesFillingUp
           annotations:
-            description: Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{ with $labels.cluster -}} on Cluster {{ . }} {{- end }} is expected to run out of inodes within four days. Currently {{ $value | humanizePercentage }} of its inodes are free.
+            description: Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{ with $labels.k8s_cluster -}} on Cluster {{ . }} {{- end }} is expected to run out of inodes within four days. Currently {{ $value | humanizePercentage }} of its inodes are free.
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumeinodesfillingup
             summary: PersistentVolumeInodes are filling up.
           expr: |
@@ -523,16 +523,16 @@ spec:
             kubelet_volume_stats_inodes_used{job="kubelet"} > 0
             and
             predict_linear(kubelet_volume_stats_inodes_free{job="kubelet"}[6h], 4 * 24 * 3600) < 0
-            unless on(cluster, namespace, persistentvolumeclaim)
+            unless on(k8s_cluster, namespace, persistentvolumeclaim)
             kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
-            unless on(cluster, namespace, persistentvolumeclaim)
+            unless on(k8s_cluster, namespace, persistentvolumeclaim)
             kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
           for: 1h
           labels:
             severity: warning
         - alert: KubePersistentVolumeErrors
           annotations:
-            description: The persistent volume {{ $labels.persistentvolume }} {{ with $labels.cluster -}} on Cluster {{ . }} {{- end }} has status {{ $labels.phase }}.
+            description: The persistent volume {{ $labels.persistentvolume }} {{ with $labels.k8s_cluster -}} on Cluster {{ . }} {{- end }} has status {{ $labels.phase }}.
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumeerrors
             summary: PersistentVolume is having issues with provisioning.
           expr: |
@@ -548,7 +548,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeversionmismatch
             summary: Different semantic versions of Kubernetes components running.
           expr: |
-            count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~"kube-dns|coredns"},"git_version","$1","git_version","(v[0-9]*.[0-9]*).*"))) > 1
+            count by (k8s_cluster) (count by (git_version, k8s_cluster) (label_replace(kubernetes_build_info{job!~"kube-dns|coredns"},"git_version","$1","git_version","(v[0-9]*.[0-9]*).*"))) > 1
           for: 15m
           labels:
             severity: warning
@@ -558,9 +558,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclienterrors
             summary: Kubernetes API server client is experiencing errors.
           expr: |
-            (sum(rate(rest_client_requests_total{job="kube-apiserver",code=~"5.."}[5m])) by (cluster, instance, job, namespace)
+            (sum(rate(rest_client_requests_total{job="kube-apiserver",code=~"5.."}[5m])) by (k8s_cluster, instance, job, namespace)
               /
-            sum(rate(rest_client_requests_total{job="kube-apiserver"}[5m])) by (cluster, instance, job, namespace))
+            sum(rate(rest_client_requests_total{job="kube-apiserver"}[5m])) by (k8s_cluster, instance, job, namespace))
             > 0.01
           for: 15m
           labels:
@@ -573,9 +573,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorbudgetburn
             summary: The API server is burning too much error budget.
           expr: |
-            sum by(cluster) (apiserver_request:burnrate1h) > (14.40 * 0.01000)
-            and on(cluster)
-            sum by(cluster) (apiserver_request:burnrate5m) > (14.40 * 0.01000)
+            sum by(k8s_cluster) (apiserver_request:burnrate1h) > (14.40 * 0.01000)
+            and on(k8s_cluster)
+            sum by(k8s_cluster) (apiserver_request:burnrate5m) > (14.40 * 0.01000)
           for: 2m
           labels:
             long: 1h
@@ -587,9 +587,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorbudgetburn
             summary: The API server is burning too much error budget.
           expr: |
-            sum by(cluster) (apiserver_request:burnrate6h) > (6.00 * 0.01000)
-            and on(cluster)
-            sum by(cluster) (apiserver_request:burnrate30m) > (6.00 * 0.01000)
+            sum by(k8s_cluster) (apiserver_request:burnrate6h) > (6.00 * 0.01000)
+            and on(k8s_cluster)
+            sum by(k8s_cluster) (apiserver_request:burnrate30m) > (6.00 * 0.01000)
           for: 15m
           labels:
             long: 6h
@@ -601,9 +601,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorbudgetburn
             summary: The API server is burning too much error budget.
           expr: |
-            sum by(cluster) (apiserver_request:burnrate1d) > (3.00 * 0.01000)
-            and on(cluster)
-            sum by(cluster) (apiserver_request:burnrate2h) > (3.00 * 0.01000)
+            sum by(k8s_cluster) (apiserver_request:burnrate1d) > (3.00 * 0.01000)
+            and on(k8s_cluster)
+            sum by(k8s_cluster) (apiserver_request:burnrate2h) > (3.00 * 0.01000)
           for: 1h
           labels:
             long: 1d
@@ -615,9 +615,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorbudgetburn
             summary: The API server is burning too much error budget.
           expr: |
-            sum by(cluster) (apiserver_request:burnrate3d) > (1.00 * 0.01000)
-            and on(cluster)
-            sum by(cluster) (apiserver_request:burnrate6h) > (1.00 * 0.01000)
+            sum by(k8s_cluster) (apiserver_request:burnrate3d) > (1.00 * 0.01000)
+            and on(k8s_cluster)
+            sum by(k8s_cluster) (apiserver_request:burnrate6h) > (1.00 * 0.01000)
           for: 3h
           labels:
             long: 3d
@@ -633,7 +633,7 @@ spec:
           expr: |
             histogram_quantile(0.01, sum without (namespace, service, endpoint) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="kube-apiserver"}[5m]))) < 604800
             and
-            on(job, cluster, instance) apiserver_client_certificate_expiration_seconds_count{job="kube-apiserver"} > 0
+            on(job, k8s_cluster, instance) apiserver_client_certificate_expiration_seconds_count{job="kube-apiserver"} > 0
           for: 5m
           labels:
             severity: warning
@@ -645,7 +645,7 @@ spec:
           expr: |
             histogram_quantile(0.01, sum without (namespace, service, endpoint) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="kube-apiserver"}[5m]))) < 86400
             and
-            on(job, cluster, instance) apiserver_client_certificate_expiration_seconds_count{job="kube-apiserver"} > 0
+            on(job, k8s_cluster, instance) apiserver_client_certificate_expiration_seconds_count{job="kube-apiserver"} > 0
           for: 5m
           labels:
             severity: critical
@@ -655,7 +655,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeaggregatedapierrors
             summary: Kubernetes aggregated API has reported errors.
           expr: |
-            sum by(cluster, instance, name, reason)(increase(aggregator_unavailable_apiservice_total{job="kube-apiserver"}[1m])) > 0
+            sum by(k8s_cluster, instance, name, reason)(increase(aggregator_unavailable_apiservice_total{job="kube-apiserver"}[1m])) > 0
           for: 10m
           labels:
             severity: warning
@@ -665,7 +665,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeaggregatedapidown
             summary: Kubernetes aggregated API is down.
           expr: |
-            (1 - max by(name, namespace, cluster)(avg_over_time(aggregator_unavailable_apiservice{job="kube-apiserver"}[10m]))) * 100 < 85
+            (1 - max by(name, namespace, k8s_cluster)(avg_over_time(aggregator_unavailable_apiservice{job="kube-apiserver"}[10m]))) * 100 < 85
           for: 5m
           labels:
             severity: warning
@@ -685,7 +685,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapiterminatedrequests
             summary: The kubernetes apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.
           expr: |
-            sum by(cluster) (rate(apiserver_request_terminations_total{job="kube-apiserver"}[10m])) / ( sum by(cluster) (rate(apiserver_request_total{job="kube-apiserver"}[10m])) + sum by(cluster) (rate(apiserver_request_terminations_total{job="kube-apiserver"}[10m])) ) > 0.20
+            sum by(k8s_cluster) (rate(apiserver_request_terminations_total{job="kube-apiserver"}[10m])) / ( sum by(k8s_cluster) (rate(apiserver_request_total{job="kube-apiserver"}[10m])) + sum by(k8s_cluster) (rate(apiserver_request_terminations_total{job="kube-apiserver"}[10m])) ) > 0.20
           for: 5m
           labels:
             severity: warning
@@ -698,7 +698,7 @@ spec:
             summary: Node is not ready.
           expr: |
             kube_node_status_condition{job="kube-state-metrics",condition="Ready",status="true"} == 0
-            and on (cluster, node)
+            and on (k8s_cluster, node)
             kube_node_spec_unschedulable{job="kube-state-metrics"} == 0
           for: 15m
           labels:
@@ -710,7 +710,7 @@ spec:
             summary: Node has as active Condition.
           expr: |
             kube_node_status_condition{job="kube-state-metrics",condition=~"(MemoryPressure|DiskPressure|PIDPressure)",status="true"} == 1
-            and on (cluster, node)
+            and on (k8s_cluster, node)
             kube_node_spec_unschedulable{job="kube-state-metrics"} == 0
           for: 10m
           labels:
@@ -732,16 +732,16 @@ spec:
             summary: Kubelet is running at capacity.
           expr: |
             (
-              max by (cluster, instance) (
+              max by (k8s_cluster, instance) (
                 kubelet_running_pods{job="kubelet"} > 1
               )
-              * on (cluster, instance) group_left(node)
-              max by (cluster, instance, node) (
+              * on (k8s_cluster, instance) group_left(node)
+              max by (k8s_cluster, instance, node) (
                 kubelet_node_name{job="kubelet"}
               )
             )
-            / on (cluster, node) group_left()
-            max by (cluster, node) (
+            / on (k8s_cluster, node) group_left()
+            max by (k8s_cluster, node) (
               kube_node_status_capacity{job="kube-state-metrics", resource="pods"} != 1
             ) > 0.95
           for: 15m
@@ -753,8 +753,8 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodereadinessflapping
             summary: Node readiness status is flapping.
           expr: |
-            sum(changes(kube_node_status_condition{job="kube-state-metrics",status="true",condition="Ready"}[15m])) by (cluster, node) > 2
-            and on (cluster, node)
+            sum(changes(kube_node_status_condition{job="kube-state-metrics",status="true",condition="Ready"}[15m])) by (k8s_cluster, node) > 2
+            and on (k8s_cluster, node)
             kube_node_spec_unschedulable{job="kube-state-metrics"} == 0
           for: 15m
           labels:
@@ -765,9 +765,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodeeviction
             summary: Node is evicting pods.
           expr: |
-            sum(rate(kubelet_evictions{job="kubelet"}[15m])) by(cluster, eviction_signal, instance)
-            * on (cluster, instance) group_left(node)
-            max by (cluster, instance, node) (
+            sum(rate(kubelet_evictions{job="kubelet"}[15m])) by(k8s_cluster, eviction_signal, instance)
+            * on (k8s_cluster, instance) group_left(node)
+            max by (k8s_cluster, instance, node) (
               kubelet_node_name{job="kubelet"}
             )
             > 0
@@ -791,14 +791,14 @@ spec:
             summary: Kubelet Pod startup latency is too high.
           expr: |
             histogram_quantile(0.99,
-              sum by (cluster, instance, le) (
-                topk by (cluster, instance, le, operation_type) (1,
+              sum by (k8s_cluster, instance, le) (
+                topk by (k8s_cluster, instance, le, operation_type) (1,
                   rate(kubelet_pod_worker_duration_seconds_bucket{job="kubelet"}[5m])
                 )
               )
             )
-            * on(cluster, instance) group_left(node)
-            topk by (cluster, instance, node) (1,
+            * on(k8s_cluster, instance) group_left(node)
+            topk by (k8s_cluster, instance, node) (1,
               kubelet_node_name{job="kubelet"}
             )
             > 60
