@@ -1,0 +1,7 @@
+namespace: kube-system
+resources:
+  - metrics-server.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: metrics-server
+      app.kubernetes.io/component: apiservice

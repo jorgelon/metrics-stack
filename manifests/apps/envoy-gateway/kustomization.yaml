@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - grafana-db-gatewayclasses.yaml
   - grafana-db-gateways.yaml

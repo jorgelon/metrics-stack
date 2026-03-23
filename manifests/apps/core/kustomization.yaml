@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - prom-rule-nodes.yaml
   - prom-rule-recording-k8s.yaml

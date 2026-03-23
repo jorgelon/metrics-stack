@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - k8s-cr-node-exporter.yaml
   - k8s-crb-node-exporter.yaml

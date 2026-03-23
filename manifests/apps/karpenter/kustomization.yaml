@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - grafana-db-karpenter-capacity-dashboard.yaml
   # - grafana-db-karpenter-controllers-allocation.yaml # outdated

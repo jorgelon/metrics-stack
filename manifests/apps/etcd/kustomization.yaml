@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - grafana-db-etcd.yaml
   - k8s-svc-etcd-metrics.yaml

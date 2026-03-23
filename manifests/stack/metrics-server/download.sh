@@ -14,6 +14,7 @@ curl -fSlL https://github.com/kubernetes-sigs/metrics-server/releases/download/$
 
 echo "Creating kustomization file from the yaml files inside the $release directory"
 cat <<EOF >${release}/kustomization.yaml
+namespace: kube-system
 resources:
   - metrics-server.yaml
 labels:

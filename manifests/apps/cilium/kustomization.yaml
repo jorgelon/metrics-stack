@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - grafana-db-cilium-agent.yaml
   - grafana-db-cilium-operator.yaml

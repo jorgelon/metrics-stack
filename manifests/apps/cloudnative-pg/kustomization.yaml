@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - grafana-db-cloudnative-pg.yaml
   - prom-amc-inhibit-cnpg.yaml

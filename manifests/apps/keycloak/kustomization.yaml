@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - grafana-db-keycloak-capacity-planning.yaml
   - grafana-db-keycloak-metrics.yaml

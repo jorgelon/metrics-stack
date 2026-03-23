@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - k8s-sa-alertmanager.yaml
   - prom-am-instance.yaml

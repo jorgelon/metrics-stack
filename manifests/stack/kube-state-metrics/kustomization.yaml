@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - k8s-cr-kube-state-metrics.yaml
   - k8s-crb-kube-state-metrics.yaml

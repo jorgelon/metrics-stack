@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - grafana-db-coredns-mixin.yaml # mixin
   - grafana-db-coredns.yaml # dotdc

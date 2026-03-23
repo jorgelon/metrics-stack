@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - prom-pm-infisical.yaml
   - prom-rule-infisical.yaml

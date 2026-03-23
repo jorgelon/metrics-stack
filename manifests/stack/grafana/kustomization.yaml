@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - grafana-instance.yaml
   - grafana-ds-prometheus.yaml

@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - k8s-deploy-karma.yaml
   - k8s-svc-karma.yaml
