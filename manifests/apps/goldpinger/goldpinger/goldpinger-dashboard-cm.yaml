@@ -1,0 +1,12 @@
+{{- if .Values.goldpinger.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: goldpinger-dashboard-{{ .Values.name }}
+  labels:
+    {{- include "commonLabels" . | nindent 4 }}
+    {{- include "selector" . | nindent 4 }}
+data:
+  goldpinger-dashboard.json: |-
+{{ .Files.Get "dashboards/goldpinger/goldpinger-dashboard.json" | indent 4}}
+{{- end }}

@@ -1,13 +1,5 @@
 namespace: monitoring
 resources:
-  - grafana-db-gatewayclasses.yaml
-  - grafana-db-gateways.yaml
-  - grafana-db-grpcroutes.yaml
-  - grafana-db-httproutes.yaml
-  - grafana-db-policies.yaml
-  - grafana-db-tcproutes.yaml
-  - grafana-db-tlsroutes.yaml
-  - grafana-db-udproutes.yaml
   - prom-sm-envoy-gateway.yaml
 labels:
   - pairs:

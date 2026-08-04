@@ -1,0 +1,3 @@
+resources:
+  - grafana-db-17781.yaml
+  - prom-sm-loki.yaml

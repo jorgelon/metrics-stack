@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - k8s-cr-prometheus.yaml
   - k8s-crb-prometheus.yaml

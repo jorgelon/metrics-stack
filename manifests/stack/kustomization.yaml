@@ -15,5 +15,3 @@ patches:
       - op: add
         path: /spec/template/spec/containers/0/args/-
         value: --kubelet-insecure-tls
-
-#   - path: overlays/adapter.yaml # link prometheus-adapter with our prometheus instance

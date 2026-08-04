@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: goldpinger
+spec:
+  endpoints:
+    - interval: 30s
+      port: http
+  jobLabel: name
+  namespaceSelector:
+    matchNames:
+      - goldpinger
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: goldpinger-hyperv-testing-goldpinger
+      app.kubernetes.io/name: goldpinger

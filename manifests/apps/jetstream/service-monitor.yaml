@@ -1,0 +1,16 @@
+{{- if .Values.jetstream.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: jetstream-metrics-{{ .Values.name }}
+  namespace: {{ .Values.jetstream.namespace }}
+  labels:
+    apps-monitoring/instance: {{ .Values.name }}
+spec:
+  selector:
+    matchLabels:
+      controller: eventbus-controller
+  endpoints:
+  - port: metrics
+    path: /metrics
+{{- end }}

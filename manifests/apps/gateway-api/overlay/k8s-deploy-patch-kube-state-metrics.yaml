@@ -1,0 +1,15 @@
+- op: add
+  path: /spec/template/spec/volumes
+  value:
+    - name: gateway-api-state-metrics
+      configMap:
+        defaultMode: 420
+        name: gateway-api-state-metrics
+- op: add
+  path: /spec/template/spec/containers/0/volumeMounts
+  value:
+    - name: gateway-api-state-metrics
+      mountPath: /etc/customresourcestate
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --custom-resource-state-config-file=/etc/customresourcestate/custom-resource-state.yaml

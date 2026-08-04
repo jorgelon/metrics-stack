@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - 3.19.1
   - custom

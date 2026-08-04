@@ -1,0 +1,16 @@
+{{- if .Values.blackboxExporter.enabled }}
+kind: Probe
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: ingress-{{ .Values.name }}
+spec:
+  jobName: ingress-{{ .Values.name }}
+  interval: 60s
+  module: http_2xx_skipcert
+  prober:
+    url: blackbox-exporter-{{ .Values.name }}:19115
+  targets:
+    ingress:
+      namespaceSelector:
+        any: true
+{{- end }}

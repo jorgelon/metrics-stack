@@ -1,0 +1,9 @@
+{{- if .Values.jetstream.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jetstream-state-metrics-{{ .Values.name }}
+data:
+  jetstream-state-metrics.json: |-
+{{ .Files.Get "jetstream-state-metrics.json" | indent 4}}
+{{- end }}

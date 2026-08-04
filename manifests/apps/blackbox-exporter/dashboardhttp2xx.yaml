@@ -1,0 +1,14 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: http2xx-{{ .Values.name }}
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana-{{ .Values.name }}"
+  grafanaCom:
+    id: 16124
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "prometheus"
+  folder: blackbox

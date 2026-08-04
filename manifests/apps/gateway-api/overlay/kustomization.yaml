@@ -1,0 +1,14 @@
+namespace: monitoring
+resources:
+  - k8s-cm-gateway-api-state-metrics.yaml
+patches:
+  - path: k8s-cr-patch-kube-state-metrics.yaml
+    target:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      name: kube-state-metrics
+  - path: k8s-deploy-patch-kube-state-metrics.yaml
+    target:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: kube-state-metrics

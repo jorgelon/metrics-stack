@@ -1,0 +1,16 @@
+kind: Probe
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: http2xx-{{ .Values.name }}
+spec:
+  jobName: http2xx-{{ .Values.name }}
+  interval: 60s
+  module: http_2xx
+  prober:
+    url: blackbox-exporter-{{ .Values.name }}:19115
+  targets:
+    staticConfig:
+      static:
+        {{- range .Values.blackboxExporter.probes.http2xx }}
+        - {{ . | quote }}
+        {{- end }}    

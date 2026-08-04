@@ -1,0 +1,17 @@
+{{- if .Values.jetstream.enabled }}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: jetstream-state-metrics-{{ .Values.name }}
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana-{{ .Values.name }}"
+  configMapRef:
+    name: jetstream-state-metrics-{{ .Values.name }}
+    key: jetstream-state-metrics.json
+  folder: jetstream
+  # datasources:
+  #   - inputName: "DS__NATS-PROMETHEUS"
+  #     datasourceName: "prometheus"
+{{- end }}

@@ -1,0 +1,24 @@
+{{- if .Values.goldpinger.alerting.enabled }}
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: goldpinger-{{ .Values.name }}
+  labels:
+    {{- include "commonLabels" . | nindent 4 }}
+    {{- include "selector" . | nindent 4 }}
+spec:
+  route:
+    receiver: "teams"
+    groupWait: 5s
+    groupInterval: 5m
+    repeatInterval: 1h
+    matchers:
+      - name: service
+        value: goldpinger
+  receivers:
+    - name: "teams"
+      msteamsConfigs:
+        - webhookUrl:
+            key: msteams-webhook-url-cnpg
+            name: msteams-webhook-url-cnpg
+{{- end }}
