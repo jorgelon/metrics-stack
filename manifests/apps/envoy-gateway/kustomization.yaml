@@ -1,6 +1,11 @@
 namespace: monitoring
 resources:
   - prom-sm-envoy-gateway.yaml
+  - prom-pm-envoy-proxy.yaml
+  - prom-rule-envoy-gateway.yaml
+  - grafana-db-envoy-gateway-global.yaml
+  - grafana-db-envoy-proxy-global.yaml
+  - grafana-db-envoy-clusters.yaml
 labels:
   - pairs:
       app.kubernetes.io/name: envoy-gateway

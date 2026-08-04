@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: envoy-proxy
+spec:
+  # Proxy pods live in envoy-gateway-system by default, but namespaced or
+  # merged-gateway deployment modes place them elsewhere. Match on labels only.
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: envoy
+      app.kubernetes.io/component: proxy
+      app.kubernetes.io/managed-by: envoy-gateway
+  podMetricsEndpoints:
+    - port: metrics
+      path: /stats/prometheus
+      relabelings:
+        # Pinned so PrometheusRule expressions can select job="envoy-proxy".
+        - action: replace
+          targetLabel: job
+          replacement: envoy-proxy
+        # Surface the owning Gateway so dashboards and alerts can group by it.
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_label_gateway_envoyproxy_io_owning_gateway_name
+          targetLabel: gateway_name
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_label_gateway_envoyproxy_io_owning_gateway_namespace
+          targetLabel: gateway_namespace

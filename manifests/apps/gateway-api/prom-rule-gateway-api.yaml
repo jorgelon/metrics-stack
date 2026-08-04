@@ -9,19 +9,69 @@ spec:
     rules:
     - alert: UnhealthyGateway
       annotations:
-        description: Gateway {{ $labels.namespace }}/{{$labels.name}} has an unhealthy status
         summary: Either the Accepted or Programmed status is not True
+        description: Gateway {{ $labels.namespace }}/{{ $labels.name }} has an unhealthy status
       expr: |
         (gatewayapi_gateway_status{type="Accepted"} == 0) or (gatewayapi_gateway_status{type="Programmed"} == 0)
       for: 10m
       labels:
         severity: critical
-    - alert: InsecureHTTPListener
+    # UnhealthyGateway cannot catch this: `== 0` needs the condition to exist. A
+    # Gateway whose gatewayClassName matches no controller is never reconciled,
+    # so it has no Accepted condition at all and stays invisible.
+    - alert: GatewayNotReconciled
       annotations:
-        description: Gateway {{ $labels.namespace }}/{{$labels.name}} has an insecure listener {{$labels.protocol}}/{{$labels.port}}
-        summary: Listeners must use HTTPS
+        summary: Gateway has not been reconciled by any controller
+        description: >-
+          Gateway {{ $labels.namespace }}/{{ $labels.name }} has no Accepted condition,
+          so no controller has claimed it. Check that its gatewayClassName refers to an
+          existing GatewayClass whose controller is running.
       expr: |
-        gatewayapi_gateway_listener_info{protocol="HTTP"}
+        gatewayapi_gateway_info
+        unless on (namespace, name) gatewayapi_gateway_status{type="Accepted"}
+      for: 15m
+      labels:
+        severity: critical
+    - alert: UnhealthyGatewayClass
+      annotations:
+        summary: GatewayClass is not Accepted
+        description: >-
+          GatewayClass {{ $labels.name }} is not Accepted. Gateways referencing it will
+          not be programmed.
+      expr: |
+        gatewayapi_gatewayclass_status{type="Accepted"} == 0
       for: 10m
       labels:
         severity: critical
+    - alert: InsecureHTTPListener
+      annotations:
+        summary: Listeners should use HTTPS
+        description: >-
+          Gateway {{ $labels.namespace }}/{{ $labels.name }} has an insecure listener
+          {{ $labels.protocol }}/{{ $labels.port }}.
+        runbook: >-
+          A plain HTTP listener that exists only to redirect to HTTPS is legitimate and
+          will match this rule. Exempt such a Gateway by adding the Kubernetes label
+          allow_insecure_listener=true to it.
+      # The opt-out reads gatewayapi_gateway_labels, which copies Kubernetes labels
+      # straight through with no label_ prefix, so the exemption is declared on the
+      # Gateway itself rather than hardcoded here.
+      expr: |
+        gatewayapi_gateway_listener_info{protocol="HTTP"}
+        unless on (namespace, name)
+        gatewayapi_gateway_labels{allow_insecure_listener="true"}
+      for: 10m
+      labels:
+        severity: warning
+    - alert: GatewayListenerNoAttachedRoutes
+      annotations:
+        summary: Gateway listener has no attached routes
+        description: >-
+          Listener {{ $labels.listener_name }} on Gateway
+          {{ $labels.namespace }}/{{ $labels.name }} has 0 attached routes and is
+          serving nothing. Check the Routes' parentRefs and the listener's allowedRoutes.
+      expr: |
+        gatewayapi_gateway_status_listener_attached_routes == 0
+      for: 30m
+      labels:
+        severity: warning

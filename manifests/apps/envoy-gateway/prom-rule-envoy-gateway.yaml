@@ -1,0 +1,170 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: envoy-gateway-rules
+  namespace: monitoring
+spec:
+  groups:
+  - name: envoy-gateway-control-plane.rules
+    rules:
+    - alert: EnvoyGatewayControlPlaneDown
+      annotations:
+        summary: Envoy Gateway control plane is not being scraped
+        description: >-
+          The envoy-gateway control plane target {{ $labels.namespace }}/{{ $labels.pod }}
+          has been down for more than 10m. Gateway API resources will not be reconciled
+          into xDS configuration.
+      expr: |
+        up{job="envoy-gateway"} == 0
+      for: 10m
+      labels:
+        severity: critical
+    - alert: EnvoyGatewayReconcileErrors
+      annotations:
+        summary: Envoy Gateway controller is failing to reconcile
+        description: >-
+          Controller {{ $labels.controller }} in {{ $labels.namespace }}/{{ $labels.pod }}
+          is returning reconcile errors ({{ printf "%.2f" $value }}/s). Gateway or Route
+          changes may not be applied to the data plane.
+      expr: |
+        sum by (namespace, pod, controller) (
+          rate(controller_runtime_reconcile_errors_total{job="envoy-gateway"}[5m])
+        ) > 0
+      for: 15m
+      labels:
+        severity: warning
+    - alert: EnvoyGatewayCertWatcherErrors
+      annotations:
+        summary: Envoy Gateway cannot read its serving certificate
+        description: >-
+          The cert watcher in {{ $labels.namespace }}/{{ $labels.pod }} is failing to read
+          its certificate. xDS mTLS between the control plane and the proxies may break on
+          the next rotation.
+      expr: |
+        sum by (namespace, pod) (
+          rate(certwatcher_read_certificate_errors_total{job="envoy-gateway"}[10m])
+        ) > 0
+      for: 15m
+      labels:
+        severity: warning
+
+  - name: envoy-gateway-data-plane.rules
+    rules:
+    - alert: EnvoyProxyDown
+      annotations:
+        summary: Envoy proxy is not being scraped
+        description: >-
+          Envoy proxy pod {{ $labels.namespace }}/{{ $labels.pod }} (gateway
+          {{ $labels.gateway_namespace }}/{{ $labels.gateway_name }}) has been down for
+          more than 10m.
+      expr: |
+        up{job="envoy-proxy"} == 0
+      for: 10m
+      labels:
+        severity: critical
+    - alert: EnvoyProxyNotLive
+      annotations:
+        summary: Envoy proxy is not live
+        description: >-
+          Envoy proxy {{ $labels.namespace }}/{{ $labels.pod }} reports
+          envoy_server_live == 0 and is not serving traffic.
+      expr: |
+        envoy_server_live == 0
+      for: 5m
+      labels:
+        severity: critical
+    - alert: EnvoyProxyXdsDisconnected
+      annotations:
+        summary: Envoy proxy lost its xDS connection to the control plane
+        description: >-
+          Envoy proxy {{ $labels.namespace }}/{{ $labels.pod }} is disconnected from the
+          envoy-gateway xDS server. It keeps serving the last known configuration, so
+          Gateway and Route changes are silently not applied.
+      expr: |
+        envoy_control_plane_connected_state == 0
+      for: 10m
+      labels:
+        severity: critical
+    - alert: EnvoyClusterNoHealthyUpstream
+      annotations:
+        summary: Envoy cluster has no healthy upstream endpoint
+        description: >-
+          Cluster {{ $labels.envoy_cluster_name }} on proxy
+          {{ $labels.namespace }}/{{ $labels.pod }} has 0 healthy members while its
+          membership is non-empty. Requests routed to it will fail.
+      expr: |
+        envoy_cluster_membership_healthy == 0
+        and envoy_cluster_membership_total > 0
+      for: 5m
+      labels:
+        severity: critical
+    - alert: EnvoyClusterDegraded
+      annotations:
+        summary: Envoy cluster has unhealthy upstream endpoints
+        description: >-
+          Cluster {{ $labels.envoy_cluster_name }} on proxy
+          {{ $labels.namespace }}/{{ $labels.pod }} has fewer than 60% of its members
+          healthy for 15m.
+      expr: |
+        (
+          envoy_cluster_membership_healthy
+          / envoy_cluster_membership_total
+        ) < 0.6
+        and envoy_cluster_membership_healthy > 0
+      for: 15m
+      labels:
+        severity: warning
+    - alert: EnvoyListenerHigh5xxRate
+      annotations:
+        summary: Envoy listener is returning 5xx responses
+        description: >-
+          Listener {{ $labels.envoy_http_conn_manager_prefix }} on proxy
+          {{ $labels.namespace }}/{{ $labels.pod }} is returning
+          {{ printf "%.1f" $value }}% 5xx responses over the last 5m.
+      expr: |
+        100 * (
+          sum by (namespace, pod, envoy_http_conn_manager_prefix) (
+            rate(envoy_http_downstream_rq_xx{envoy_response_code_class="5"}[5m])
+          )
+          /
+          sum by (namespace, pod, envoy_http_conn_manager_prefix) (
+            rate(envoy_http_downstream_rq_xx[5m])
+          )
+        ) > 5
+      for: 10m
+      labels:
+        severity: warning
+    - alert: EnvoyClusterHigh5xxRate
+      annotations:
+        summary: Envoy upstream cluster is returning 5xx responses
+        description: >-
+          Cluster {{ $labels.envoy_cluster_name }} on proxy
+          {{ $labels.namespace }}/{{ $labels.pod }} is returning
+          {{ printf "%.1f" $value }}% 5xx responses over the last 5m.
+      expr: |
+        100 * (
+          sum by (namespace, pod, envoy_cluster_name) (
+            rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class="5"}[5m])
+          )
+          /
+          sum by (namespace, pod, envoy_cluster_name) (
+            rate(envoy_cluster_upstream_rq_xx[5m])
+          )
+        ) > 5
+      for: 10m
+      labels:
+        severity: warning
+    - alert: EnvoyClusterUpstreamConnectFailures
+      annotations:
+        summary: Envoy cannot establish upstream connections
+        description: >-
+          Cluster {{ $labels.envoy_cluster_name }} on proxy
+          {{ $labels.namespace }}/{{ $labels.pod }} is failing
+          {{ printf "%.2f" $value }} upstream connection attempts per second.
+      expr: |
+        sum by (namespace, pod, envoy_cluster_name) (
+          rate(envoy_cluster_upstream_cx_connect_fail[5m])
+        ) > 0.1
+      for: 10m
+      labels:
+        severity: warning

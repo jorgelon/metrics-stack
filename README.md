@@ -69,7 +69,7 @@ The following component deploys resources in **additional** namespaces:
 | cloudnative-pg            | CloudNative-PG operator monitoring               | [README](manifests/apps/cloudnative-pg/README.md)            |
 | core                      | Essential cluster rules (nodes, volumes)         | [README](manifests/apps/core/README.md)                      |
 | coredns                   | CoreDNS monitoring                               | [README](manifests/apps/coredns/README.md)                   |
-| envoy-gateway             | Envoy Gateway control plane monitoring           | [README](manifests/apps/envoy-gateway/README.md)             |
+| envoy-gateway             | Envoy Gateway control plane and proxy monitoring  | [README](manifests/apps/envoy-gateway/README.md)             |
 | etcd                      | etcd monitoring                                  | [README](manifests/apps/etcd/README.md)                      |
 | external-secrets          | External Secrets Operator monitoring             | [README](manifests/apps/external-secrets/README.md)          |
 | gateway-api               | Gateway API state monitoring                     | [README](manifests/apps/gateway-api/README.md)               |

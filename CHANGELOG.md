@@ -8,10 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **apps**: add blackbox-exporter, goldpinger, jetstream, trivy-operator and a dedicated gateway-api component with README documentation for every stack/app/addon component
 ### Changed
 ### Deprecated
 ### Removed
-- **stack**: remove the deprecated prometheus-adapter component
 ### Fixed
 ### Security
+
+## [0.0.21-alpha2] - 2026-08-04
+
+### Added
+- **apps**: add envoy proxy monitoring and expand gateway-api alerts
+- **apps**: add blackbox-exporter, goldpinger, jetstream, trivy-operator and a dedicated gateway-api component with README documentation for every stack/app/addon component
+### Removed
+- **stack**: remove the deprecated prometheus-adapter component

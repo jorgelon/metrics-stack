@@ -10,7 +10,7 @@ data:
         - groupVersionKind:
             group: gateway.networking.k8s.io
             kind: "Gateway"
-            version: "v1beta1"
+            version: "v1"
           metricNamePrefix: gatewayapi_gateway
           labelsFromPath:
             name:
@@ -91,7 +91,7 @@ data:
         - groupVersionKind:
             group: gateway.networking.k8s.io
             kind: "GatewayClass"
-            version: "v1beta1"
+            version: "v1"
           metricNamePrefix: gatewayapi_gatewayclass
           labelsFromPath:
             name:
@@ -142,11 +142,11 @@ data:
               info:
                 path: [status, supportedFeatures]
                 labelsFromPath:
-                  features: []
+                  features: [name]
         - groupVersionKind:
             group: gateway.networking.k8s.io
             kind: "HTTPRoute"
-            version: "v1beta1"
+            version: "v1"
           metricNamePrefix: gatewayapi_httproute
           labelsFromPath:
             name:
@@ -215,7 +215,7 @@ data:
         - groupVersionKind:
             group: gateway.networking.k8s.io
             kind: "GRPCRoute"
-            version: "v1alpha2"
+            version: "v1"
           metricNamePrefix: gatewayapi_grpcroute
           labelsFromPath:
             name:
@@ -284,7 +284,7 @@ data:
         - groupVersionKind:
             group: gateway.networking.k8s.io
             kind: "TCPRoute"
-            version: "v1alpha2"
+            version: "v1"
           metricNamePrefix: gatewayapi_tcproute
           labelsFromPath:
             name:
@@ -345,7 +345,7 @@ data:
         - groupVersionKind:
             group: gateway.networking.k8s.io
             kind: "TLSRoute"
-            version: "v1alpha2"
+            version: "v1"
           metricNamePrefix: gatewayapi_tlsroute
           labelsFromPath:
             name:
@@ -414,7 +414,7 @@ data:
         - groupVersionKind:
             group: gateway.networking.k8s.io
             kind: "UDPRoute"
-            version: "v1alpha2"
+            version: "v1"
           metricNamePrefix: gatewayapi_udproute
           labelsFromPath:
             name:
@@ -475,7 +475,7 @@ data:
         - groupVersionKind:
             group: gateway.networking.k8s.io
             kind: "BackendTLSPolicy"
-            version: "v1alpha2"
+            version: "v1"
           metricNamePrefix: gatewayapi_backendtlspolicy
           labelsFromPath:
             name:
@@ -511,9 +511,11 @@ data:
             each:
               type: Info
               info:
-                path: [spec, targetRef]
+                path: [spec, targetRefs]
                 labelsFromPath:
                   target_group: ["group"]
                   target_kind: ["kind"]
                   target_name: ["name"]
-                  target_namespace: ["namespace"]
+                  # No target_namespace: BackendTLSPolicy targetRefs are
+                  # namespace-local, so the field does not exist in the schema.
+                  section_name: ["sectionName"]

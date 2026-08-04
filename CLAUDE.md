@@ -4,112 +4,85 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a Kubernetes metrics stack deployment using Kustomize and the Prometheus Operator ecosystem. It's designed for non-production use on kubeadm clusters and deploys monitoring infrastructure to the "monitoring" namespace.
+Public, non-production, opinionated Prometheus/Grafana monitoring distribution for kubeadm Kubernetes clusters, built entirely with Kustomize and the Prometheus Operator + Grafana Operator ecosystems. There is no application code, no build system and no test suite — the deliverable is YAML.
 
-## Core Architecture
+This repository is **public**: never commit internal information (AWS ARNs, internal project names, cluster names, hostnames, IPs, credentials).
 
-The repository is organized into three main sections:
+## How the pieces fit together
 
-### `/manifests/stack/` - Core Infrastructure
-Contains the fundamental monitoring components:
-- **Prometheus Operator** (v0.82.0) - Manages Prometheus instances
-- **Grafana Operator** (v5.17.1) - Manages Grafana instances  
-- **Prometheus** - Main metrics collection and storage
-- **Alertmanager** - Alert routing and management
-- **Grafana** - Metrics visualization
-- **Kube State Metrics** (v2.15.0) - Kubernetes object metrics
-- **Node Exporter** - Host-level metrics
-- **Metrics Server** (v0.7.2) - Basic CPU/memory metrics
+Three layers under `manifests/`:
 
-### `/manifests/apps/` - Application Monitoring
-Contains monitoring configurations for specific applications:
-- **control-plane/** - Kubernetes control plane components (API server, scheduler, kubelet)
-- **core/** - Essential cluster monitoring (nodes, pods, volumes, namespaces)
-- **workloads/** - Generic workload monitoring (deployments, pods, jobs, etc.)
-- **cilium/**, **coredns/**, **karpenter/** - Specific application integrations
-- **argocd/**, **cloudnative-pg/**, **keycloak/** - Third-party application monitoring
+- `stack/` — the monitoring infrastructure itself (operators, Prometheus, Alertmanager, Grafana, kube-state-metrics, node-exporter, metrics-server, plus `overlays/` with Day-2 patches). `manifests/stack/kustomization.yaml` is the source of truth for which vendored component versions are active — do not hardcode version numbers in docs, reference that file.
+- `apps/` — one directory per monitored application (ServiceMonitors/PodMonitors, PrometheusRules, GrafanaDashboards). Consumers opt in per app.
+- `addons/` — optional extras (currently `karma`).
 
-### `/manifests/addons/` - Optional Components
-Additional tools like Karma for alert management.
+**The label `app.kubernetes.io/part-of: metrics-stack` is the wiring for the whole stack.** `manifests/stack/prometheus/prom-instance.yaml` selects ServiceMonitors, PodMonitors, PrometheusRules and Probes by that label, and every `GrafanaDashboard`/`GrafanaDatasource` uses it in `spec.instanceSelector`. The label is applied by the *consumer's* root kustomization (see `README.md`), not by the component kustomizations — so a new monitor/rule/dashboard needs no label of its own, but it is invisible to Prometheus/Grafana if the consumer omits the root label.
 
-## Key Deployment Patterns
+The Prometheus instance defines a default `scrapeClass` that injects a `k8s_cluster` label; kubernetes-mixin dashboards in this repo depend on that label existing.
 
-- **Kustomize-based**: All deployments use kustomization.yaml files for configuration management
-- **Operator-driven**: Uses Prometheus and Grafana operators for declarative management
-- **Modular**: Each application has its own monitoring configuration in separate directories
-- **Version-pinned**: Core components are pinned to specific versions in subdirectories
+Consumers do not deploy from this tree directly — they clone a tag and reference paths like `../../releases/edge/apps/core` (see `README.md` "How to use"). Deployment is GitOps (ArgoCD); do not propose `kubectl apply/create/delete`.
 
-## Common Commands
+### Vendored upstream manifests
 
-### Deploy the complete stack:
+Components that track upstream releases keep one subdirectory per version (`prometheus-operator/v0.90.0`, `grafana-operator/v5.22.2`, `metrics-server/v0.8.1`, `kubernetes/kubernetes-mixin/releases/version-1.4.2`) and are refreshed with the component's own script rather than hand-edited:
+
 ```bash
-kubectl apply -k manifests/stack/
-```
-
-### Deploy specific application monitoring:
-```bash
-kubectl apply -k manifests/apps/core/
-kubectl apply -k manifests/apps/cilium/
-```
-
-### Update operator manifests:
-```bash
-# Download latest operator manifests
 ./manifests/stack/prometheus-operator/download_releases.sh
 ./manifests/stack/grafana-operator/download_release.sh
+./manifests/stack/metrics-server/download.sh
+./manifests/apps/kubernetes/kubernetes-mixin/download_release.sh   # or build_in_container.sh / build_from_source.sh
+./manifests/stack/node-exporter/generate-prometheus-rule.sh
+./manifests/apps/x509-certificate-exporter/generate-manifests.sh
 ```
 
-### View current deployments:
+Upgrading = add the new version directory, then repoint the `resources:` entry in the parent `kustomization.yaml`. Old version directories are kept.
+
+## Working commands
+
 ```bash
-kubectl get pods -n monitoring
-kubectl get prometheus -n monitoring
-kubectl get grafana -n monitoring
+# Render any component (this is the closest thing to a build/test)
+kubectl kustomize manifests/stack/
+kustomize build manifests/apps/envoy-gateway/
+
+# Validate rendered output against CRD-aware schemas
+kustomize build manifests/apps/core/ | kubeconform -strict -summary \
+  -schema-location default \
+  -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+
+yamllint manifests/            # lint
+pre-commit run --all-files     # secret scanning (betterleaks + trufflehog); CI also runs gitleaks
 ```
 
-## Configuration Management
+Always render the component you touched — a missing entry in `resources:` fails silently in review but breaks the consumer.
 
-- **ServiceMonitors**: Defined in individual app directories (e.g., `prom-sm-*.yaml`)
-- **PrometheusRules**: Alert rules in `prom-rule-*.yaml` files
-- **Grafana Dashboards**: Dashboard definitions in `grafana-db-*.yaml` files
-- **PodMonitors**: Alternative to ServiceMonitors for direct pod scraping
+## File conventions
 
-## Special Considerations
+Manifest filenames encode the resource kind (the `gitops-name-k8s-yaml` skill enforces this):
 
-### CNPG (CloudNative-PG)
-- Assumes operator deployed in `cnpg-system` namespace
-- Disable built-in PodMonitor in clusters: `enablePodMonitor: false`
+- `prom-sm-*` ServiceMonitor · `prom-pm-*` PodMonitor · `prom-rule-*` PrometheusRule · `prom-am*` Alertmanager · `prom-amc-*` AlertmanagerConfig · `prom-instance` Prometheus
+- `grafana-db-*` GrafanaDashboard · `grafana-ds-*` GrafanaDatasource · `grafana-instance`
+- `k8s-*` plain Kubernetes resources, with a kind abbreviation: `k8s-cm-`, `k8s-cr-`, `k8s-crb-`, `k8s-sa-`, `k8s-svc-`, `k8s-deploy-`, `k8s-ds-`, `k8s-secret-`
 
-### Keycloak
-- Requires manual ServiceMonitor creation
-- Enable metrics: `metrics-enabled=true` and `event-metrics-user-enabled=true`
+Each component `kustomization.yaml` declares its own `namespace:` and an `app.kubernetes.io/name` label. Dashboards set `spec.folder` to the app name and are sourced by `url:`, `grafanaCom.id:` or inline JSON.
 
-### Loki Integration
-- Creates Grafana datasource pointing to `http://loki.loki.svc.cluster.local:3100`
-- Dashboards sourced from loki-mixin-compiled
+## Hard rules
 
-### Quarkus Applications
-- No standardized ServiceMonitor - create manually per application
+- **Never set `namespace:` in a root kustomization.** Each component fixes its own namespace; `metrics-server` and one etcd Service intentionally live in `kube-system`, and a root override breaks them. The `README.md` "Namespaces" table must list every component that deploys outside `monitoring`.
+- `README.md` at the repo root **must link to the README.md of every component** under `manifests/stack/`, `manifests/apps/` and `manifests/addons/`. Adding a component directory means adding a table row.
+- Every component directory needs its own `README.md` (purpose, files, prerequisites, references). The old `doc/` folder was distributed into these — do not recreate it.
+- **Components shipping Grafana dashboards must have a "Dashboard Sources" section** in their README, naming for each dashboard the upstream git URL, the grafana.com ID (with URL), or the official project docs. Applies to inline JSON and `grafanaCom.id` alike.
+- Record user-visible changes in `CHANGELOG.md` under `## [Unreleased]` (Keep a Changelog 1.1.0 format, entries prefixed `**stack**:` / `**apps**:` / `**addons**:`). Releases are SemVer git tags (`v0.0.x`).
+- Bash scripts start with `set -euf -o pipefail` immediately after the shebang.
 
-## Day 2 Operations
+## Component-specific gotchas
 
-The repository supports production-ready configurations through overlays:
-- Persistent storage for Prometheus, Alertmanager, and Grafana
-- Resource requests/limits configuration
-- High availability with replicas and PodDisruptionBudgets
-- Ingress exposure for web interfaces
-- AlertManagerConfig for alert routing
+- **CloudNative-PG**: operator assumed in `cnpg-system`; set `enablePodMonitor: false` on Clusters so this repo's monitor is the only one.
+- **Keycloak**: needs `metrics-enabled=true` and `event-metrics-user-enabled=true` on the Keycloak CR; ServiceMonitor is hand-made here.
+- **Quarkus**: no standard ServiceMonitor upstream — one must be written per application.
+- **Loki**: adds a Grafana datasource pointing at `http://loki.loki.svc.cluster.local:3100`; dashboards come from loki-mixin-compiled.
+- **Grafana**: the instance mounts a `grafana` PVC and reads env from an optional `grafana-env` Secret, with Stakater Reloader annotations — both are supplied by the consumer.
+- **kubernetes-mixin**: scheduler, controller-manager and kube-proxy alerts are deliberately disabled (managed control planes do not expose them).
 
-## Monitoring Sources
+## Upstream rule/dashboard sources
 
-The stack incorporates rules and dashboards from:
-- https://github.com/bdossantos/prometheus-alert-rules
-- https://samber.github.io/awesome-prometheus-alerts/
-- https://github.com/dotdc/grafana-dashboards-kubernetes
-- https://monitoring.mixins.dev/
-
-## Documentation Rules
-
-- `README.md` at the repository root **must include a link to the README.md of every stack component, app, and addon** under `manifests/stack/`, `manifests/apps/`, and `manifests/addons/`. When adding a new component directory, add its entry to the tables in `README.md`.
-- Each component directory must have its own `README.md` describing its purpose, files, prerequisites, and relevant references. Content from the `doc/` folder has been distributed into the appropriate component READMEs — do not recreate the `doc/` folder.
-- **Never set `namespace:` in the root kustomization.yaml** that composes this stack. Each component declares its own namespace. Some components (e.g. etcd) deploy resources into namespaces other than `monitoring` — a root namespace override would break them.
-- **If a component includes Grafana dashboards**, its `README.md` must include a **Dashboard Sources** section listing where each dashboard was obtained: upstream git repository URL, grafana.com dashboard ID (with URL), or official project documentation. This applies to both inline JSON dashboards and `grafanaCom.id` references.
+<https://monitoring.mixins.dev/> · <https://github.com/bdossantos/prometheus-alert-rules> · <https://samber.github.io/awesome-prometheus-alerts/> · <https://github.com/dotdc/grafana-dashboards-kubernetes>

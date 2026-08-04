@@ -12,3 +12,9 @@ spec:
       control-plane: envoy-gateway
   endpoints:
     - port: metrics
+      # Pinned so PrometheusRule expressions can select job="envoy-gateway"
+      # instead of the scraped Service name.
+      relabelings:
+        - action: replace
+          targetLabel: job
+          replacement: envoy-gateway

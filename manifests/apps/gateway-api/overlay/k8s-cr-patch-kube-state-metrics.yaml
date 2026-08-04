@@ -22,6 +22,7 @@
       - tlsroutes
       - udproutes
       - backendtlspolicies
+      - listenersets
     verbs:
       - list
       - watch
