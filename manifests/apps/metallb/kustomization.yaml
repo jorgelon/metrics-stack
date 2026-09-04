@@ -1,0 +1,9 @@
+resources:
+  - k8s-svc-metallb-controller-metrics.yaml
+  - k8s-svc-metallb-speaker-metrics.yaml
+  - prom-sm-metallb-controller.yaml
+  - prom-sm-metallb-speaker.yaml
+  - prom-rule-metallb.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: metallb

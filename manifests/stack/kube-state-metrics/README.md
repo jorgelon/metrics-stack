@@ -16,7 +16,7 @@ Hand-crafted manifests for kube-state-metrics — generates Prometheus metrics f
 
 ## Extending RBAC for Custom Resources
 
-To add metrics for custom resources (e.g. Gateway API), use the overlay in the relevant app directory. See [manifests/apps/gateway-api/overlay/](../../apps/gateway-api/overlay/) for an example that patches the ClusterRole and Deployment.
+To add metrics for custom resources (e.g. Gateway API), add the relevant app directory to your root `components:` instead of `resources:`. See [manifests/apps/gateway-api/](../../apps/gateway-api/), a kustomize component that patches this ClusterRole and Deployment — so it composes with the whole `stack/` kustomization instead of replacing this directory.
 
 ## References
 

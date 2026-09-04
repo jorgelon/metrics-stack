@@ -1,6 +1,0 @@
-namespace: monitoring
-resources:
-  - prom-sm-goldpinger.yaml
-labels:
-  - pairs:
-      app.kubernetes.io/name: goldpinger

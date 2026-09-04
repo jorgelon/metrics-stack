@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: metallb-controller
+  namespace: monitoring
+spec:
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - metallb-system
+  selector:
+    matchLabels:
+      name: metallb-controller-monitor-service
+  endpoints:
+    - port: metricshttps
+      scheme: https
+      honorLabels: true
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      tlsConfig:
+        insecureSkipVerify: true

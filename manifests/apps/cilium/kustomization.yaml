@@ -9,6 +9,7 @@ resources:
   - prom-rule-cilium.yaml
   - prom-sm-cilium-agent.yaml
   - prom-sm-cilium-operator.yaml
+  - prom-sm-hubble-relay.yaml
   - prom-sm-hubble.yaml
 labels:
   - pairs:

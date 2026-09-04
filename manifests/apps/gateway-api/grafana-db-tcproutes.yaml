@@ -1,7 +1,10 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
+  labels:
+    app.kubernetes.io/name: gateway-api
   name: tcproutes
+  namespace: monitoring
 spec:
   instanceSelector:
     matchLabels:

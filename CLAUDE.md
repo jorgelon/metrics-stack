@@ -32,6 +32,7 @@ Components that track upstream releases keep one subdirectory per version (`prom
 ./manifests/stack/metrics-server/download.sh
 ./manifests/apps/kubernetes/kubernetes-mixin/download_release.sh   # or build_in_container.sh / build_from_source.sh
 ./manifests/stack/node-exporter/generate-prometheus-rule.sh
+./manifests/apps/cilium/generate-prometheus-rule.sh
 ./manifests/apps/x509-certificate-exporter/generate-manifests.sh
 ```
 
@@ -64,6 +65,8 @@ Manifest filenames encode the resource kind (the `gitops-name-k8s-yaml` skill en
 - `k8s-*` plain Kubernetes resources, with a kind abbreviation: `k8s-cm-`, `k8s-cr-`, `k8s-crb-`, `k8s-sa-`, `k8s-svc-`, `k8s-deploy-`, `k8s-ds-`, `k8s-secret-`
 
 Each component `kustomization.yaml` declares its own `namespace:` and an `app.kubernetes.io/name` label. Dashboards set `spec.folder` to the app name and are sourced by `url:`, `grafanaCom.id:` or inline JSON.
+
+The one exception is `manifests/apps/gateway-api/`, which is a **kustomize component** (`kind: Component`) because it patches the consumer's kube-state-metrics. It sets neither `namespace:` nor `labels:` — a component's transformers rewrite the parent's resources too — so each of its resources carries `namespace: monitoring` and `app.kubernetes.io/name: gateway-api` in its own metadata, and it cannot be rendered standalone. See its README.
 
 ## Hard rules
 

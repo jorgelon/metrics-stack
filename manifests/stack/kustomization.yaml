@@ -1,9 +1,9 @@
 resources:
   - alertmanager
   - grafana
-  - grafana-operator/v5.22.2
+  - grafana-operator/v5.25.0
   - kube-state-metrics
-  - metrics-server/v0.8.1
+  - metrics-server/v0.9.0
   - node-exporter
   - prometheus
   - prometheus-operator/v0.90.0

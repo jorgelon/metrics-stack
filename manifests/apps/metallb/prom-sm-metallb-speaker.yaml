@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: metallb-speaker
+  namespace: monitoring
+spec:
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - metallb-system
+  selector:
+    matchLabels:
+      name: metallb-speaker-monitor-service
+  endpoints:
+    - port: metricshttps
+      scheme: https
+      honorLabels: true
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      tlsConfig:
+        insecureSkipVerify: true
+    # BGP/BFD metrics, only present when the speaker runs in FRR mode
+    # (speaker.frr.enabled=true). Harmless when FRR is disabled: the port has
+    # no endpoint and yields no targets.
+    - port: frrmetricshttps
+      scheme: https
+      honorLabels: true
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      tlsConfig:
+        insecureSkipVerify: true

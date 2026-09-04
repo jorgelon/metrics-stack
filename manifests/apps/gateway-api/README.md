@@ -7,47 +7,76 @@ Istio, Cilium, NGINX). For Envoy-specific traffic metrics see
 
 Everything here describes **configuration and status**, never traffic. Gateway
 API defines no metrics of its own — there is no spec'd `/metrics` endpoint. The
-`gatewayapi_*` series exist only because kube-state-metrics is configured to
-convert the custom resources into gauges, which is what `overlay/` does. Request
-rates, latency and error codes come only from the implementation.
+`gatewayapi_*` series exist only because this component configures
+kube-state-metrics to convert the custom resources into gauges. Request rates,
+latency and error codes come only from the implementation.
+
+## How to include it
+
+This directory is a **kustomize component**, not a plain kustomization. It goes
+in `components:`, alongside — not instead of — the kube-state-metrics you
+already deploy:
+
+```yaml
+resources:
+  - ../../releases/edge/stack            # already brings stack/kube-state-metrics
+components:
+  - ../../releases/edge/apps/gateway-api
+```
+
+Listed under `resources:` instead, the build fails with `no resource matches
+strategic merge patch "Deployment.v1.apps/kube-state-metrics.monitoring"`.
+
+It has to be a component because it patches kube-state-metrics, which the
+consumer brings in itself. A plain kustomization cannot patch a sibling's
+resources; it would have to own `stack/kube-state-metrics` and be included
+*instead of* it, which is impossible when the consumer references the whole
+`stack/` kustomization. Reusing the patch files from the consumer's own root is
+not an option either — kustomize rejects any file outside the kustomization root
+with `security; file ... is not in or below ...`. Components are applied after
+the parent has accumulated its resources, so the patches reach the ClusterRole
+and Deployment wherever they came from.
+
+Two consequences worth knowing:
+
+- `kustomize build manifests/apps/gateway-api/` **cannot** be run standalone —
+  there is no kube-state-metrics to patch. Render it from a root that includes
+  the stack.
+- The component sets no `namespace:` and no `labels:`. A component's namespace
+  and label transformers rewrite the *parent's* resources too, which would drag
+  `metrics-server` out of `kube-system`. Every resource here therefore carries
+  `namespace: monitoring` and `app.kubernetes.io/name: gateway-api` in its own
+  metadata — keep that up when adding files.
 
 ## Components
 
-| File                                  | Description                                       |
-|---------------------------------------|---------------------------------------------------|
-| `prom-rule-gateway-api.yaml`          | PrometheusRule alerts                             |
-| `grafana-db-gateways.yaml`            | Dashboard: Gateway API State / Gateways           |
-| `grafana-db-gatewayclasses.yaml`      | Dashboard: Gateway API State / GatewayClasses     |
-| `grafana-db-httproutes.yaml`          | Dashboard: Gateway API State / HTTPRoutes         |
-| `grafana-db-grpcroutes.yaml`          | Dashboard: Gateway API State / GRPCRoutes         |
-| `grafana-db-tcproutes.yaml`           | Dashboard: Gateway API State / TCPRoutes          |
-| `grafana-db-tlsroutes.yaml`           | Dashboard: Gateway API State / TLSRoutes          |
-| `grafana-db-udproutes.yaml`           | Dashboard: Gateway API State / UDPRoutes          |
-| `grafana-db-backendtlspolicies.yaml`  | Dashboard: Gateway API State / BackendTLSPolicies |
-
-## overlay/
-
-`overlay/` produces the `gatewayapi_*` metrics via kube-state-metrics Custom
-Resource State. It is **self-contained**: it composes
-`manifests/stack/kube-state-metrics/` itself and layers the config on top.
-
-Include `manifests/apps/gateway-api/overlay/` **instead of**
-`manifests/stack/kube-state-metrics/` — including both applies the base twice. A
-kustomization cannot patch resources belonging to a sibling, which is why the
-overlay owns the base rather than sitting beside it.
-
 | File                                            | Description                                              |
 |-------------------------------------------------|----------------------------------------------------------|
+| `prom-rule-gateway-api.yaml`                    | PrometheusRule alerts                                    |
+| `grafana-db-gateways.yaml`                      | Dashboard: Gateway API State / Gateways                  |
+| `grafana-db-gatewayclasses.yaml`                | Dashboard: Gateway API State / GatewayClasses            |
+| `grafana-db-httproutes.yaml`                    | Dashboard: Gateway API State / HTTPRoutes                |
+| `grafana-db-grpcroutes.yaml`                    | Dashboard: Gateway API State / GRPCRoutes                |
+| `grafana-db-tcproutes.yaml`                     | Dashboard: Gateway API State / TCPRoutes                 |
+| `grafana-db-tlsroutes.yaml`                     | Dashboard: Gateway API State / TLSRoutes                 |
+| `grafana-db-udproutes.yaml`                     | Dashboard: Gateway API State / UDPRoutes                 |
+| `grafana-db-backendtlspolicies.yaml`            | Dashboard: Gateway API State / BackendTLSPolicies        |
 | `k8s-cm-gateway-api-state-metrics.yaml`         | ConfigMap with the Custom Resource State config          |
 | `k8s-cr-patch-kube-state-metrics.yaml`          | JSON 6902: appends Gateway API rules to the ClusterRole  |
 | `k8s-deploy-patch-kube-state-metrics.yaml`      | Strategic merge: mounts the ConfigMap                    |
-| `k8s-deploy-patch-args-kube-state-metrics.yaml` | JSON 6902: appends `--custom-resource-state-config-file`  |
+| `k8s-deploy-patch-args-kube-state-metrics.yaml` | JSON 6902: appends `--custom-resource-state-config-file` |
 
 The mount is a strategic merge (merges `volumes`/`volumeMounts` by name) while
 the flag is a JSON 6902 append. A strategic merge would replace the whole `args`
 list and silently drop the base `--metric-labels-allowlist` flag.
 
-Without the overlay, every dashboard here shows **No data**.
+Miss the `components:` entry and every dashboard here shows **No data** — the
+`gatewayapi_*` series simply do not exist. Confirm the wiring rendered, from
+your root:
+
+```bash
+kustomize build . | grep -e custom-resource-state-config-file -e gateway.networking.k8s.io
+```
 
 ## Prerequisites
 

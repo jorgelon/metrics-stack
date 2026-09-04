@@ -1,3 +1,4 @@
+namespace: kube-system
 resources:
   - metrics-server.yaml
 labels:

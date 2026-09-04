@@ -1,4 +1,28 @@
-namespace: monitoring
+# Gateway API monitoring, as a single kustomize *component*: dashboards, alerts
+# and the kube-state-metrics Custom Resource State config that produces the
+# `gatewayapi_*` series they all query.
+#
+# Unlike every other app here, this one goes in `components:`, not `resources:`:
+#
+#   resources:
+#     - ../../releases/edge/stack            # brings stack/kube-state-metrics
+#   components:
+#     - ../../releases/edge/apps/gateway-api
+#
+# It has to be a component because it patches kube-state-metrics, which the
+# consumer already deploys. A plain kustomization cannot patch a sibling's
+# resources, and kustomize refuses to reference patch files from outside its own
+# root — so the only shape that composes with a consumer pulling in the whole
+# stack/ kustomization is a component, whose patches are applied after the
+# parent has accumulated its resources.
+#
+# Deliberately NO `namespace:` and NO `labels:` here. A component's namespace and
+# label transformers rewrite the parent's resources as well as its own, which
+# would move metrics-server out of kube-system. Every resource below therefore
+# carries `namespace: monitoring` and `app.kubernetes.io/name: gateway-api` in
+# its own metadata.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
 resources:
   - grafana-db-backendtlspolicies.yaml
   - grafana-db-gatewayclasses.yaml
@@ -8,7 +32,25 @@ resources:
   - grafana-db-tcproutes.yaml
   - grafana-db-tlsroutes.yaml
   - grafana-db-udproutes.yaml
+  - k8s-cm-gateway-api-state-metrics.yaml
   - prom-rule-gateway-api.yaml
-labels:
-  - pairs:
-      app.kubernetes.io/name: gateway-api
+patches:
+  # Target selectors take `group` + `version`, NOT `apiVersion` — kustomize
+  # rejects the whole build with `unknown field "apiVersion"`.
+  - path: k8s-cr-patch-kube-state-metrics.yaml
+    target:
+      group: rbac.authorization.k8s.io
+      version: v1
+      kind: ClusterRole
+      name: kube-state-metrics
+  # Strategic merge: merges volumes/volumeMounts by name, so it will not drop
+  # volumes the base deployment may gain later.
+  - path: k8s-deploy-patch-kube-state-metrics.yaml
+  # JSON 6902 append: a strategic merge would replace the whole args list and
+  # silently drop the base --metric-labels-allowlist flag.
+  - path: k8s-deploy-patch-args-kube-state-metrics.yaml
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: kube-state-metrics

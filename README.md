@@ -24,6 +24,8 @@ resources:
 patches:
   - path: overlays/prometheus.yaml
   - path: overlays/grafana-datasource-loki.yaml
+components:
+  - ../../releases/edge/apps/gateway-api
 labels:
   - pairs:
       app.kubernetes.io/part-of: metrics-stack
@@ -31,6 +33,8 @@ labels:
       app.kubernetes.io/instance: MY-CLUSTER
       app.kubernetes.io/version: PUT-THE-TAG-HERE
 ```
+
+> **`apps/gateway-api` goes in `components:`, not `resources:`.** It is the one app that patches kube-state-metrics (to emit the `gatewayapi_*` series the Gateway API dashboards query), and only a component can patch resources the consumer brought in itself. Listed under `resources:` it fails with `no resource matches strategic merge patch "Deployment.v1.apps/kube-state-metrics.monitoring"`. See its [README](manifests/apps/gateway-api/README.md).
 
 > **Do not set `namespace:` in your root kustomization.yaml.** Each component fixes its own namespace internally. Some components deploy resources outside `monitoring` — adding a root namespace override would break them. See the [Namespaces](#namespaces) section below.
 
@@ -73,7 +77,6 @@ The following component deploys resources in **additional** namespaces:
 | etcd                      | etcd monitoring                                  | [README](manifests/apps/etcd/README.md)                      |
 | external-secrets          | External Secrets Operator monitoring             | [README](manifests/apps/external-secrets/README.md)          |
 | gateway-api               | Gateway API state monitoring                     | [README](manifests/apps/gateway-api/README.md)               |
-| goldpinger                | Pod connectivity monitoring                      | [README](manifests/apps/goldpinger/README.md)                |
 | infisical                 | Infisical operator monitoring                    | [README](manifests/apps/infisical/README.md)                 |
 | jetstream                 | NATS JetStream monitoring                        | [README](manifests/apps/jetstream/README.md)                 |
 | karpenter                 | Karpenter autoscaler monitoring                  | [README](manifests/apps/karpenter/README.md)                 |
@@ -81,6 +84,7 @@ The following component deploys resources in **additional** namespaces:
 | kubernetes                | Kubernetes control plane monitoring              | [README](manifests/apps/kubernetes/README.md)                |
 | kured                     | Kured reboot daemon monitoring                   | [README](manifests/apps/kured/README.md)                     |
 | loki                      | Loki log aggregation integration                 | [README](manifests/apps/loki/README.md)                      |
+| metallb                   | MetalLB load balancer monitoring                 | [README](manifests/apps/metallb/README.md)                   |
 | quarkus                   | Quarkus application monitoring                   | [README](manifests/apps/quarkus/README.md)                   |
 | x509-certificate-exporter | TLS certificate expiry monitoring                | [README](manifests/apps/x509-certificate-exporter/README.md) |
 | trivy-operator            | Trivy Operator vulnerability scanning monitoring | [README](manifests/apps/trivy-operator/README.md)            |

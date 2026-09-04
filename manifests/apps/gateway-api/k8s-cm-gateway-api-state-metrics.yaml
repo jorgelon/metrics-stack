@@ -1,7 +1,14 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  # Namespace and labels are explicit here, not set by the kustomization: this
+  # directory is a kustomize component, and a component's namespace/labels
+  # transformers rewrite the *parent's* resources too (verified: they would drag
+  # metrics-server out of kube-system).
+  labels:
+    app.kubernetes.io/name: gateway-api
   name: gateway-api-state-metrics
+  namespace: monitoring
 data:
   custom-resource-state.yaml: |
     kind: CustomResourceStateMetrics
