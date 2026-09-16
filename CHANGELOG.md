@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [0.0.21-alpha4] - 2026-09-16
+
+### Added
+- **apps**: add `coredns/eks-auto-mode`, a kustomize component that exposes CoreDNS metrics on EKS Auto Mode clusters, where DNS runs as a node-level system service instead of a Deployment. It patches the stack's `node-exporter` DaemonSet with a `kube-rbac-proxy` sidecar that republishes the node-local `127.0.0.1:9153` endpoint over TLS, adds a headless Service and a ServiceMonitor that reuses the `node-exporter` SA token, and labels the series `job="kube-dns"` so the existing CoreDNS PrometheusRule and dashboards match unmodified
+- **apps**: add `external-secrets/grafana-db-external-secrets.yaml`, the official External Secrets Operator dashboard read from the upstream repository URL
+- **apps**: add three ServiceMonitors to `external-secrets/` for the controller, the cert-controller and the webhook. They are deployed in `monitoring` and select the chart's metrics Services in the `external-secrets` namespace. Enable `metrics.service.enabled`, `certController.metrics.service.enabled` and `webhook.metrics.service.enabled` in the chart, and keep `serviceMonitor.enabled=false` to avoid duplicates
+
+### Changed
+- **apps**: expand `external-secrets/prom-rule-external-secrets.yaml` from 3 to 13 alerts in 3 groups. The new alerts cover the Ready condition of ClusterExternalSecret and PushSecret, the sync and provider API error ratios, and the absence of sync activity. They also cover slow reconciliation, controller-runtime reconciliation errors, work queue depth and webhook 5xx answers
+
 ## [0.0.21-alpha3] - 2026-09-04
 
 ### Added

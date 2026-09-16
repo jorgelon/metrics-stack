@@ -1,0 +1,45 @@
+# EKS Auto Mode runs CoreDNS as a node-level system service, not as a Deployment.
+# It exposes its Prometheus endpoint on 127.0.0.1:9153 only, so it is unreachable
+# from the Prometheus pod. node-exporter already runs hostNetwork on every node,
+# so we add a second kube-rbac-proxy that republishes that loopback endpoint on
+# the node IP, mirroring how node-exporter itself is exposed on 9100.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: monitoring
+spec:
+  template:
+    spec:
+      containers:
+        - name: kube-rbac-proxy-coredns
+          image: quay.io/brancz/kube-rbac-proxy:v0.20.0
+          args:
+            - --secure-listen-address=[$(IP)]:9153
+            - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+            - --upstream=http://127.0.0.1:9153/
+          env:
+            - name: IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            - containerPort: 9153
+              hostPort: 9153
+              name: coredns
+          resources:
+            limits:
+              memory: 70Mi
+            requests:
+              cpu: 10m
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 65532
+            runAsNonRoot: true
+            runAsUser: 65532
+            seccompProfile:
+              type: RuntimeDefault

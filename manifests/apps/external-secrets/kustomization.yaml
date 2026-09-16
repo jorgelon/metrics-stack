@@ -1,3 +1,10 @@
 namespace: monitoring
 resources:
+  - prom-sm-external-secrets.yaml
+  - prom-sm-external-secrets-cert-controller.yaml
+  - prom-sm-external-secrets-webhook.yaml
   - prom-rule-external-secrets.yaml
+  - grafana-db-external-secrets.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/name: external-secrets

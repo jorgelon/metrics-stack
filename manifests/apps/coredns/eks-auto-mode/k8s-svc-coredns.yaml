@@ -1,0 +1,25 @@
+# Headless Service over the node-exporter pods, exposing the extra
+# kube-rbac-proxy port that fronts the node-local CoreDNS metrics endpoint.
+# k8s-app: kube-dns is what jobLabel picks up, so scraped series carry
+# job="kube-dns" and the stack's existing CoreDNS rules/dashboards match.
+apiVersion: v1
+kind: Service
+metadata:
+  name: coredns-node
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: coredns
+    k8s-app: kube-dns
+spec:
+  clusterIP: None
+  ports:
+    - name: coredns
+      port: 9153
+      protocol: TCP
+      targetPort: coredns
+  selector:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: node-exporter
+    app.kubernetes.io/part-of: metrics-stack
+  sessionAffinity: None
+  type: ClusterIP

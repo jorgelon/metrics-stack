@@ -1,0 +1,38 @@
+# Scrapes the per-node CoreDNS instances of EKS Auto Mode through the
+# kube-rbac-proxy sidecar on the node-exporter DaemonSet. Reuses the
+# node-exporter SA token, which is already authorized for /metrics.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: coredns-node
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: coredns
+spec:
+  jobLabel: k8s-app
+  attachMetadata:
+    node: false
+  endpoints:
+    - port: coredns
+      scheme: https
+      authorization:
+        type: Bearer
+        credentials:
+          key: token
+          name: node-exporter-sa-token
+      tlsConfig:
+        insecureSkipVerify: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: nodename
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: coredns
+      k8s-app: kube-dns
