@@ -2,7 +2,7 @@
 
 Prometheus instance managed by the Prometheus Operator.
 
-## Components
+## Files
 
 | File                              | Description                              |
 |-----------------------------------|------------------------------------------|
@@ -13,13 +13,57 @@ Prometheus instance managed by the Prometheus Operator.
 | `k8s-crb-prometheus.yaml`         | ClusterRoleBinding                       |
 | `grafana-db-prometheus.yaml`      | Grafana dashboard for Prometheus itself  |
 
+## Components
+
+| Component | Adds |
+|---|---|
+| [`single-pvc`](single-pvc/README.md) | One replica keeping 7 days on a 100Gi volume |
+
+```yaml
+resources:
+  - <release>/stack
+components:
+  - <release>/stack/prometheus/single-pvc
+```
+
+The base declares no replicas, no retention and no storage. Without the component the
+operator runs one replica writing to an `emptyDir`, and every restart loses the data. You
+must overlay the `changeme` storage class the component carries. Read its README.
+
+Two alternatives exist. One is two replicas for high availability. The other is remote
+write to a long term store, such as Thanos or Mimir. This release ships no component for
+either one yet.
+
+## Sizing
+
+`prom-instance.yaml` sizes the config-reloader sidecar. Its memory request equals its
+limit, and it declares no CPU limit.
+
+The prometheus container itself is not sized anywhere. It tracks the number of series the
+cluster produces, and no two clusters agree on that, so set it in the consuming
+kustomization:
+
+```yaml
+# overlays/prom-instance.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: k8s
+spec:
+  resources:
+    requests:
+      cpu: 200m
+    limits:
+      memory: 3Gi
+```
+
 ## Scrape Classes
 
 The instance uses scrape classes to manage the `cluster` label consistently.
 
 ### Default Scrape Class
 
-Conditionally adds `cluster="local"` only when the scraped metric does not already carry a `cluster` label:
+If the scraped metric does not already carry a `cluster` label, this adds `cluster="local"`:
 
 ```yaml
 scrapeClasses:

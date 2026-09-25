@@ -1,0 +1,28 @@
+# The store the whole stack reads from. Other components reference it by name
+# without creating it, so this is the only place it is declared.
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: akv-metrics-stack
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  provider:
+    azurekv:
+      authType: ServicePrincipal
+      environmentType: PublicCloud
+      # Service principal credentials, deployed with the external-secrets release
+      authSecretRef:
+        clientId:
+          key: clientId
+          name: akv-eso-creds
+          namespace: external-secrets
+        clientSecret:
+          key: clientSecret
+          name: akv-eso-creds
+          namespace: external-secrets
+      tenantId: changeme
+      vaultUrl: https://changeme.vault.azure.net
+  conditions:
+    - namespaces:
+        - monitoring

@@ -1,0 +1,23 @@
+# Example: opens Karma on the active alerts that go to Microsoft Teams.
+# The karma Deployment already reads this ConfigMap with envFrom, marked
+# optional, so adding it is enough. Copy this file into your own source and
+# list the copy under `resources:`. Do not reference this directory from a
+# kustomization. It is an example, not a component.
+#
+# FILTERS_DEFAULT holds the filters Karma applies when someone opens the page.
+# A viewer can still clear them.
+#
+#   @state=active          hide the alerts that already resolved
+#   @receiver=...          keep only the alerts that reached one receiver
+#
+# The receiver is addressed as <namespace>/<AlertmanagerConfig>/<receiver>.
+# `monitoring/teams/teams` is the receiver that the release components
+# stack/alertmanager/msteams-azurekv and msteams-awssm create. If you use the
+# smtp component instead, the value is `monitoring/smtp/smtp`. If no receiver
+# matches, Karma opens on an empty page and shows no error.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: karma-config
+data:
+  FILTERS_DEFAULT: "@state=active @receiver=monitoring/teams/teams"

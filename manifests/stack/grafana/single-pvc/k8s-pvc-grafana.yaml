@@ -1,0 +1,16 @@
+# grafana-instance.yaml mounts this claim by name, so it ships here.
+# ReadWriteOnce, because Grafana OSS runs a single replica and some storage
+# classes do not support ReadWriteMany. The storage class is cluster-specific:
+# overlay it. `changeme` binds nothing, so a missing overlay leaves the pod
+# Pending instead of landing it on the wrong disk.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: changeme

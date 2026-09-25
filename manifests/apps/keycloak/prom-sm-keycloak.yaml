@@ -2,15 +2,14 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: keycloak
-  namespace: monitoring
 spec:
+  jobLabel: app
   endpoints:
-    - path: /metrics
+    - path: /metrics # or subpath like /auth/metrics
       port: management
       scheme: https
       tlsConfig:
         insecureSkipVerify: true
-  jobLabel: app
   namespaceSelector:
     any: true
   selector:

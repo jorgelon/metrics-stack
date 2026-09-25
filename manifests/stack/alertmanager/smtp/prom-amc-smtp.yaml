@@ -1,0 +1,34 @@
+# Mail alerting, for sites that do not use MS Teams. The sender, the recipient,
+# the smart host and the subject prefix are site-specific. Set the prefix to the
+# environment name, so a reader can tell a staging alert from a live one.
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: smtp
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+  labels:
+    # alertmanagerConfigSelector in prom-am-instance.yaml matches this
+    app.kubernetes.io/part-of: metrics-stack
+spec:
+  route:
+    groupBy: ["..."]
+    groupWait: 2m
+    groupInterval: 1h
+    repeatInterval: 12h
+    receiver: "smtp"
+    matchers:
+      - name: severity
+        value: "critical|warning|info"
+        matchType: =~
+  receivers:
+    - name: smtp
+      emailConfigs:
+        - from: changeme
+          to: changeme
+          smarthost: changeme
+          requireTLS: true
+          sendResolved: true
+          headers:
+            - key: Subject
+              value: "[CHANGEME] {{ .GroupLabels.alertname }} ({{ .Status | toUpper }})"

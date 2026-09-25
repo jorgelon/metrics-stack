@@ -13,3 +13,31 @@ spec:
   serviceAccountName: alertmanager
   alertmanagerConfigMatcherStrategy: # disable default matcher strategy
     type: None
+  # Memory request equals the limit, so the pod lands in the Guaranteed QoS class
+  # for memory. No CPU limit, to avoid throttling a bursty reload.
+  resources:
+    requests:
+      cpu: 10m
+      memory: 100Mi
+    limits:
+      memory: 100Mi
+  containers:
+    - name: config-reloader
+      resources:
+        requests:
+          cpu: 50m
+          memory: 150Mi
+        limits:
+          memory: 150Mi
+  # 2Gi is enough for the notification log and the silences on every cluster we
+  # run. The storage class is cluster-specific: overlay it. `changeme` binds
+  # nothing, so a missing overlay leaves the pod Pending instead of landing it
+  # on the wrong disk.
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi
+        storageClassName: changeme

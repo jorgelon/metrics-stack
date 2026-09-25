@@ -1,0 +1,15 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: msteams-webhook-url
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+spec:
+  data:
+    - remoteRef:
+        key: changeme
+        property: msteams-webhook-url
+      secretKey: msteams-webhook-url
+  secretStoreRef:
+    kind: SecretStore
+    name: aws-secretsmanager

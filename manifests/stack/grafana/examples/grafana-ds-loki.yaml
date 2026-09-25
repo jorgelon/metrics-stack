@@ -1,0 +1,15 @@
+# Example: repoints the Loki datasource of apps/loki at another namespace.
+# The release ships the datasource pointing at `loki.loki`. If your Loki runs
+# elsewhere, copy this patch into your own source, replace `changeme` with that
+# namespace, and list it under `patches:`. It needs apps/loki in `resources:`,
+# because a patch with no target fails the build.
+# Do not reference this directory from a kustomization. It is an example, not a
+# component.
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: loki
+spec:
+  datasource:
+    name: loki
+    url: http://loki.changeme.svc.cluster.local:3100

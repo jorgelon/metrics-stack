@@ -1,0 +1,41 @@
+# Builds the grafana-env secret that grafana-instance.yaml loads with envFrom.
+# Key Vault names cannot contain an underscore, so each secret is named GF-...
+# and the rewrite turns the dashes back into underscores.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: grafana-env
+spec:
+  dataFrom:
+    - find:
+        conversionStrategy: Default
+        decodingStrategy: None
+        name:
+          regexp: ^GF-(.*)$
+      rewrite:
+        - regexp:
+            source: "-"
+            target: _
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: akv-metrics-stack
+  target:
+    template:
+      data:
+        GF_AUTH_AZUREAD_ALLOW_ASSIGN_GRAFANA_ADMIN: "false"
+        GF_AUTH_AZUREAD_ALLOW_SIGN_UP: "true"
+        GF_AUTH_AZUREAD_ALLOWED_GROUPS: "{{ .GF_AUTH_AZUREAD_ALLOWED_GROUPS }}"
+        GF_AUTH_AZUREAD_ALLOWED_ORGANIZATIONS: "{{ .GF_AUTH_AZUREAD_ALLOWED_ORGANIZATIONS }}"
+        GF_AUTH_AZUREAD_AUTH_URL: "{{ .GF_AUTH_AZUREAD_AUTH_URL }}"
+        GF_AUTH_AZUREAD_AUTO_LOGIN: "false"
+        GF_AUTH_AZUREAD_CLIENT_ID: "{{ .GF_AUTH_AZUREAD_CLIENT_ID }}"
+        GF_AUTH_AZUREAD_CLIENT_SECRET: "{{ .GF_AUTH_AZUREAD_CLIENT_SECRET }}"
+        GF_AUTH_AZUREAD_ENABLED: "true"
+        GF_AUTH_AZUREAD_NAME: Azure AD
+        GF_AUTH_AZUREAD_ROLE_ATTRIBUTE_STRICT: "true"
+        GF_AUTH_AZUREAD_SCOPES: openid email profile
+        GF_AUTH_AZUREAD_SKIP_ORG_ROLE_SYNC: "false"
+        GF_AUTH_AZUREAD_TOKEN_URL: "{{ .GF_AUTH_AZUREAD_TOKEN_URL }}"
+        GF_AUTH_AZUREAD_USE_PKCE: "true"
+        GF_DATE_FORMATS_DEFAULT_TIMEZONE: UTC
+        GF_SERVER_ROOT_URL: "{{ .GF_SERVER_ROOT_URL }}"

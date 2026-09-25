@@ -1,0 +1,21 @@
+# Scrapes CoreDNS through the pods instead of through the kube-dns Service.
+# The label matches the one the parent apps/coredns kustomization applies, so
+# the CoreDNS rules and dashboards group these series the same way.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: coredns
+  labels:
+    app.kubernetes.io/name: coredns
+spec:
+  jobLabel: k8s-app
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: coredns
+  podMetricsEndpoints:
+    - port: tcp-9153
+      path: /metrics
+      interval: 30s
+  namespaceSelector:
+    matchNames:
+      - kube-system

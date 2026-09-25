@@ -2,7 +2,7 @@
 
 Grafana dashboard for Quarkus applications.
 
-## Components
+## Files
 
 | File                      | Description                   |
 |---------------------------|-------------------------------|
@@ -10,7 +10,13 @@ Grafana dashboard for Quarkus applications.
 
 ## Prerequisites
 
-This directory does not include a ServiceMonitor or PodMonitor — Quarkus applications cannot be standardized across deployments. Create a ServiceMonitor or PodMonitor manually per application, outside this repository.
+The release ships no ServiceMonitor or PodMonitor here. Quarkus applications do not share
+a layout, so no single scrape target fits them all. Write one per application in your own
+source.
+
+[`examples/prom-sm-quarkus.yaml`](examples/README.md) is a starting point. It is an
+example, not a component: copy the file, replace every `changeme`, and list the copy under
+`resources:`.
 
 ## Dashboard Sources
 
@@ -20,5 +26,5 @@ This directory does not include a ServiceMonitor or PodMonitor — Quarkus appli
 
 ## References
 
-- [Quarkus — Micrometer metrics](https://quarkus.io/guides/micrometer)
-- [Quarkus — SmallRye metrics](https://quarkus.io/guides/smallrye-metrics)
+- [Quarkus, Micrometer metrics](https://quarkus.io/guides/micrometer)
+- [Quarkus, SmallRye metrics](https://quarkus.io/guides/smallrye-metrics)

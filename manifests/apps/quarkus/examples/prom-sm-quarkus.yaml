@@ -1,0 +1,24 @@
+# Example: scrapes one Quarkus application.
+# Quarkus applications do not share a layout, so this file cannot be a
+# component. Copy it into your own source, replace every `changeme`, and rename
+# the object after the application. Do not reference this directory from a
+# kustomization. It is an example, not a component.
+#
+# The path assumes the application serves metrics under its own root, which is
+# what a Quarkus service with a non-empty `quarkus.http.root-path` does. An
+# application at the server root uses `/q/metrics` instead.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: changeme
+spec:
+  endpoints:
+    - port: http
+      path: /changeme/q/metrics
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - changeme
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: changeme
