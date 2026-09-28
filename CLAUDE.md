@@ -45,16 +45,27 @@ Do not propose `kubectl apply`, `kubectl create` or `kubectl delete`.
 
 ### Kustomize components
 
-Several directories are kustomize components (`kind: Component`) instead of plain kustomizations.
-A consumer lists them under `components:`, not under `resources:`.
-A component exists where the correct content depends on the platform or on the consumer's secret backend, so the release cannot pick one.
-The current components are:
+A few directories are kustomize components (`kind: Component`). A consumer lists those under `components:`.
+Every other directory is a plain kustomization that the consumer lists under `resources:`.
 
-- `manifests/apps/gateway-api/`, which patches the consumer's kube-state-metrics.
-- `manifests/apps/coredns/eks-auto-mode` and `coredns/ionos`, two of the three scrape targets. The parent `apps/coredns` ships the rules and dashboards only. A consumer must add exactly one scrape target. The third one, `coredns/kubeadm`, is a plain kustomization and goes in `resources:`, because it patches nothing.
-- `manifests/stack/prometheus/single-pvc` and `manifests/stack/grafana/single-pvc`, which add persistent storage.
-- `manifests/stack/grafana/azure-sso`, which adds Azure AD single sign-on through the External Secrets Operator.
-- `manifests/stack/alertmanager/msteams`, `msteams-awssm`, `msteams-azurekv` and `smtp`, the notification receivers. The `msteams` component holds the shared receiver. Consumers reference `msteams-awssm` or `msteams-azurekv`, which pull `msteams` in through their own `components:`.
+**The rule.** A directory that must change a resource it does not own is a component.
+Every other directory is a plain kustomization.
+"Change a resource it does not own" means a `patches:` entry, a `replacements:` entry, or a transformer.
+The target is a resource that the parent or the consumer brought in.
+A plain kustomization cannot do that. It sees only its own root, and a patch with no matching target fails the build.
+
+Being optional is not a reason to write a component.
+The consumer opts in by adding the path to `resources:`.
+Prefer a plain kustomization for two reasons.
+It renders on its own, so `kustomize build <dir>` and `kubeconform` test it directly.
+And it sets its own `namespace:` and `labels:`, instead of repeating them in every file.
+
+The four current components, with what each one patches:
+
+- `manifests/apps/gateway-api/`, the kube-state-metrics ClusterRole and Deployment that the consumer deploys.
+- `manifests/apps/coredns/eks-auto-mode`, the node-exporter DaemonSet of `manifests/stack`. It is one of the three coredns scrape targets. The parent `apps/coredns` ships the rules and dashboards only, and the consumer adds exactly one target. The other two, `coredns/kubeadm` and `coredns/ionos`, patch nothing and go in `resources:`.
+- `manifests/stack/prometheus/single-pvc`, the Prometheus instance of its parent directory.
+- `manifests/stack/grafana/single-pvc`, the Grafana instance of its parent directory.
 
 A component's transformers rewrite the parent's resources too.
 So a component sets neither `namespace:` nor `labels:`.
@@ -62,9 +73,13 @@ Each of its resources carries its own `namespace:` and its own `app.kubernetes.i
 A component cannot render standalone.
 Render it through a test kustomization that lists it under `components:`.
 
+One exception to `namespace:` in a plain kustomization: a directory that ships a cluster-scoped custom resource sets no `namespace:`.
+Kustomize does not know the scope of a custom resource, so the namespace transformer writes `metadata.namespace` into it.
+Set the namespace per file there instead. `manifests/stack/grafana/azure-sso` is the one case, because of its `ClusterSecretStore`.
+
 Values that the consumer must supply appear as the literal sentinel `changeme`, for example `storageClassName: changeme`.
 A sentinel binds nothing, so a missing overlay fails loudly instead of landing on a default.
-List every sentinel of a component in its README.
+List every sentinel of a directory in its README.
 
 ### Example manifests
 

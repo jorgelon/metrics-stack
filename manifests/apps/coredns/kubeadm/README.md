@@ -36,5 +36,5 @@ resources:
 ## Caveats
 
 Use one of `kubeadm`, `eks-auto-mode` or `ionos`, never two. They all create a scrape
-target named `coredns`. `eks-auto-mode` and `ionos` are kustomize components, so they go
-in `components:` instead.
+target named `coredns`. `eks-auto-mode` is a kustomize component, so it goes in
+`components:` instead.

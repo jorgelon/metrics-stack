@@ -9,51 +9,32 @@ Alertmanager instance managed by the Prometheus Operator.
 | `prom-am-instance.yaml`    | Alertmanager CRD instance              |
 | `k8s-sa-alertmanager.yaml` | ServiceAccount                         |
 
-## Receiver components
+## Receivers
 
-The instance ships with no routing. Each component below adds one `AlertmanagerConfig`
+The instance ships with no routing. Each directory below adds one `AlertmanagerConfig`
 that routes every alert of severity `critical`, `warning` or `info` to one receiver. Add
-the one that matches where your alerts go.
+the one that matches where your alerts go. All three patch nothing, so they are plain
+kustomizations and you list them in `resources:`.
 
-| Component | Sends to | Secret backend |
+| Directory | Sends to | Secret backend |
 |---|---|---|
-| `msteams-azurekv` | Microsoft Teams | Azure Key Vault |
-| `msteams-awssm` | Microsoft Teams | AWS Secrets Manager |
-| `smtp` | Mail | none |
+| [`msteams-azurekv`](msteams-azurekv/README.md) | Microsoft Teams | Azure Key Vault |
+| [`msteams-awssm`](msteams-awssm/README.md) | Microsoft Teams | AWS Secrets Manager |
+| [`smtp`](smtp/README.md) | Mail | none |
 
 ```yaml
 resources:
   - <release>/stack
-components:
   - <release>/stack/alertmanager/msteams-azurekv
 ```
 
 Each config carries the label `app.kubernetes.io/part-of: metrics-stack`, which is what
 `alertmanagerConfigSelector` in `prom-am-instance.yaml` matches.
 
-### Microsoft Teams
-
-The two `msteams-*` components share one receiver, which lives in the `msteams`
-component. Each backend pulls it in through its own `components:` list, so you reference
-a backend, never `msteams` on its own. On its own it declares a receiver whose secret
-nothing creates.
-
-Both read the webhook into a secret named `msteams-webhook-url` through the External
-Secrets Operator, and they differ only in the store:
-
-- `msteams-azurekv` reads the key `secret/msteams-webhook-url` from a `ClusterSecretStore`
-  named `akv-metrics-stack`. You create that store.
-- `msteams-awssm` creates its own `SecretStore` named `aws-secretsmanager`. Overlay
-  `region` in `eso-ss.yaml`, and the secret `key` in `eso-es-msteams-webhook-url.yaml`.
-  Both are `changeme`.
-
-Use one of them, never both. They create the same `AlertmanagerConfig` named `teams`.
-
-### Mail
-
-`smtp` adds an `AlertmanagerConfig` named `smtp` with an email receiver. Overlay `from`,
-`to`, `smarthost` and the subject prefix. All four are `changeme`. Set the prefix to the
-environment name, so a reader can tell a staging alert from a live one.
+The two `msteams-*` directories share one receiver, which lives in
+[`msteams`](msteams/README.md). Each backend pulls it in through its own `resources:`
+list, so you reference a backend, never `msteams` on its own. Use one backend, never
+both. They create the same `AlertmanagerConfig` named `teams`.
 
 ## Storage: you must overlay the storage class
 

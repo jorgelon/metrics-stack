@@ -6,7 +6,7 @@ A non-production, opinionated Prometheus monitoring stack for Kubernetes. Design
 
 1. Clone a tag of this repository
 2. Create a `kustomization.yaml` that loads the stack, desired apps, and addons
-3. Create an `AlertmanagerConfig` resource to route alerts if desired
+3. To route alerts, add one of the [Alertmanager receivers](manifests/stack/alertmanager/README.md), or write your own `AlertmanagerConfig`
 4. Expose services (Grafana, Karma, Prometheus) via Ingress or Gateway API
 5. Add the required label `app.kubernetes.io/part-of: metrics-stack`
 
@@ -15,17 +15,18 @@ resources:
   - ../../releases/edge/addons/karma
   - ../../releases/edge/apps/core
   - ../../releases/edge/apps/coredns
+  - ../../releases/edge/apps/coredns/kubeadm
   - ../../releases/edge/apps/kubernetes
   - ../../releases/edge/stack
-  - alertmanagerconfig.yaml
+  - ../../releases/edge/stack/alertmanager/smtp
   - grafana-env.yaml
   - ingress.yaml
-  - pvc-grafana.yaml
 patches:
   - path: overlays/prometheus.yaml
   - path: overlays/grafana-datasource-loki.yaml
 components:
   - ../../releases/edge/apps/gateway-api
+  - ../../releases/edge/stack/grafana/single-pvc
 labels:
   - pairs:
       app.kubernetes.io/part-of: metrics-stack
@@ -34,9 +35,25 @@ labels:
       app.kubernetes.io/version: PUT-THE-TAG-HERE
 ```
 
-> **`apps/gateway-api` goes in `components:`, not `resources:`.** It is the one app that patches kube-state-metrics (to emit the `gatewayapi_*` series the Gateway API dashboards query), and only a component can patch resources the consumer brought in itself. Listed under `resources:` it fails with `no resource matches strategic merge patch "Deployment.v1.apps/kube-state-metrics.monitoring"`. See its [README](manifests/apps/gateway-api/README.md).
+### `resources:` or `components:`
 
-> **Do not set `namespace:` in your root kustomization.yaml.** Each component fixes its own namespace internally. Some components deploy resources outside `monitoring` — adding a root namespace override would break them. See the [Namespaces](#namespaces) section below.
+Almost every directory of this release goes in `resources:`. Four go in `components:`,
+because each one patches a resource it does not own, and kustomize cannot do that from a
+plain kustomization:
+
+| Component | Patches |
+|---|---|
+| [`apps/gateway-api`](manifests/apps/gateway-api/README.md) | the kube-state-metrics ClusterRole and Deployment you deploy |
+| [`apps/coredns/eks-auto-mode`](manifests/apps/coredns/eks-auto-mode/README.md) | the node-exporter DaemonSet of `stack` |
+| [`stack/prometheus/single-pvc`](manifests/stack/prometheus/single-pvc/README.md) | the Prometheus instance of `stack` |
+| [`stack/grafana/single-pvc`](manifests/stack/grafana/single-pvc/README.md) | the Grafana instance of `stack` |
+
+List one of these under `resources:` and the build fails, for example with `no resource
+matches strategic merge patch "Deployment.v1.apps/kube-state-metrics.monitoring"`.
+
+An optional directory is not a component. You opt in by adding its path to `resources:`.
+
+> **Do not set `namespace:` in your root kustomization.yaml.** Each directory fixes its own namespace internally. Some deploy resources outside `monitoring`, so a root namespace override breaks them. See the [Namespaces](#namespaces) section below.
 
 ## Namespaces
 
@@ -46,7 +63,7 @@ The following component deploys resources in **additional** namespaces:
 
 | Component                                                  | Resource                    | Namespace     | Reason                                                              |
 |------------------------------------------------------------|-----------------------------|---------------|---------------------------------------------------------------------|
-| [metrics-server](manifests/stack/metrics-server/README.md) | all resources               | `kube-system` | Official upstream manifest — Metrics Server must run in kube-system |
+| [metrics-server](manifests/stack/metrics-server/README.md) | all resources               | `kube-system` | Official upstream manifest. Metrics Server must run in kube-system |
 | [etcd](manifests/apps/etcd/README.md)                      | `k8s-svc-etcd-metrics.yaml` | `kube-system` | Headless Service that selects etcd pods, which run in kube-system   |
 
 ## Stack Components

@@ -8,7 +8,8 @@ IONOS Managed Kubernetes ships a `kube-dns` Service that does not declare the `m
 port. The Service exists and the CoreDNS pods serve metrics on port 9153, but the
 `ServiceMonitor` of the `kubeadm` directory has nothing to scrape.
 
-This component goes straight to the pods instead.
+This directory goes straight to the pods instead. It patches nothing, so it is a plain
+kustomization and you list it in `resources:`.
 
 ## What it does
 
@@ -30,7 +31,6 @@ and dashboards of this release therefore match without any change.
 ```yaml
 resources:
   - <release>/apps/coredns
-components:
   - <release>/apps/coredns/ionos
 ```
 

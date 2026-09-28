@@ -2,6 +2,13 @@
 
 Single sign-on for Grafana against Azure AD, with the settings read from Azure Key Vault.
 
+A plain kustomization, because it patches nothing. List it in `resources:`.
+
+It sets no `namespace:`, because `eso-css.yaml` is a `ClusterSecretStore`. Kustomize does
+not know that a custom resource is cluster-scoped, so a `namespace:` here writes a
+namespace into it. `eso-es-grafana-env.yaml` carries `namespace: monitoring` in its own
+metadata instead.
+
 ## What it does
 
 Adds two objects:
@@ -35,7 +42,7 @@ a Reloader annotation on `grafana-env`.
 
 ## Vault contents
 
-Create these secrets in the vault. The component supplies every other Azure AD setting.
+Create these secrets in the vault. This directory supplies every other Azure AD setting.
 
 | Vault secret | Becomes |
 |---|---|
@@ -52,12 +59,12 @@ Create these secrets in the vault. The component supplies every other Azure AD s
 ```yaml
 resources:
   - <release>/stack
-components:
   - <release>/stack/grafana/azure-sso
 ```
 
 ## Caveats
 
-This is the only component that creates the `akv-metrics-stack` store. The Alertmanager
-component `stack/alertmanager/msteams-azurekv` reads from that store without creating it.
-If you use that component alone, declare the store yourself.
+This is the only directory that creates the `akv-metrics-stack` store.
+[`stack/alertmanager/msteams-azurekv`](../../alertmanager/msteams-azurekv/README.md) reads
+from that store without creating it. If you use that one alone, declare the store
+yourself.

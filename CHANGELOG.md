@@ -14,6 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [0.0.21-alpha7] - 2026-09-28
+
+### Added
+- **stack**: a `README.md` for each of the four Alertmanager receivers, `msteams`, `msteams-awssm`, `msteams-azurekv` and `smtp`. They were documented in the parent `alertmanager/README.md` only
+
+### Changed
+- **stack**: **BREAKING**: `alertmanager/msteams`, `alertmanager/msteams-awssm`, `alertmanager/msteams-azurekv`, `alertmanager/smtp` and `grafana/azure-sso` are now plain kustomizations instead of kustomize components. None of them patches anything, so none needs a component. Move each one from `components:` to `resources:`. The two `msteams-*` backends now pull `../msteams` in through `resources:` as well
+- **apps**: **BREAKING**: `coredns/ionos` is now a plain kustomization instead of a kustomize component. It adds a PodMonitor and patches nothing. Move it from `components:` to `resources:`. `coredns/eks-auto-mode` stays a component, because it patches the node-exporter DaemonSet
+- **stack**: the converted directories now set their own `namespace: monitoring` and their own `app.kubernetes.io/name` label. `grafana/azure-sso` is the exception: it sets no `namespace:`, because kustomize writes one into its cluster-scoped `ClusterSecretStore`
+- the rule for `components:` against `resources:` is now written in `CLAUDE.md` and in the root `README.md`. Only a directory that must change a resource it does not own is a component. Being optional is not a reason. Four components remain: `apps/gateway-api`, `apps/coredns/eks-auto-mode`, `stack/prometheus/single-pvc` and `stack/grafana/single-pvc`
+
+### Fixed
+- **stack**: eight resources inside components carried no `metadata.namespace`. A component sets no `namespace:` of its own, so they landed in whatever namespace the consumer supplied instead of `monitoring`. The five converted directories now get it from their `kustomization.yaml`, and `grafana/single-pvc/k8s-pvc-grafana.yaml` and `grafana/azure-sso/eso-es-grafana-env.yaml` carry it in their own metadata
+
 ## [0.0.21-alpha6] - 2026-09-28
 
 ### Added

@@ -9,21 +9,23 @@ Grafana instance managed by the Grafana Operator, with a Prometheus datasource p
 | `grafana-instance.yaml`     | Grafana CRD instance                     |
 | `grafana-ds-prometheus.yaml`| Grafana datasource pointing to Prometheus|
 
-The base declares no storage and no authentication. Add the components below.
+The base declares no storage and no authentication. Add the directories below. They go in
+different fields: `single-pvc` patches the Grafana instance, so it is a kustomize
+component, and `azure-sso` patches nothing, so it is a plain kustomization.
 
-## Components
+## Add-ons
 
-| Component | Adds |
-|---|---|
-| [`single-pvc`](single-pvc/README.md) | A 2Gi volume for the SQLite database, mounted by one replica |
-| [`azure-sso`](azure-sso/README.md) | Azure AD single sign-on, read from Azure Key Vault |
+| Directory | Adds | Add under |
+|---|---|---|
+| [`single-pvc`](single-pvc/README.md) | A 2Gi volume for the SQLite database, mounted by one replica | `components:` |
+| [`azure-sso`](azure-sso/README.md) | Azure AD single sign-on, read from Azure Key Vault | `resources:` |
 
 ```yaml
 resources:
   - <release>/stack
+  - <release>/stack/grafana/azure-sso
 components:
   - <release>/stack/grafana/single-pvc
-  - <release>/stack/grafana/azure-sso
 ```
 
 ### single-pvc
@@ -33,11 +35,11 @@ Without a volume, every restart loses them. Dashboards and datasources survive e
 because the Grafana Operator reconciles them from their own objects.
 
 This component adds the claim, mounts it, and sets the deployment strategy to `Recreate`.
-You must overlay `storageClassName`, which is `changeme`. Read the component README.
+You must overlay `storageClassName`, which is `changeme`. Read its README.
 
 Grafana also reads its state from an external PostgreSQL or MySQL database, through the
 `GF_DATABASE_*` variables. That removes the volume and the single replica limit. This
-release ships no component for it yet.
+release ships nothing for it yet.
 
 ### azure-sso
 
