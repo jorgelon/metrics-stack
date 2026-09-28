@@ -1,0 +1,30 @@
+# Example ExternalSecret that builds the secret `msteams-webhook-url` from Azure
+# Key Vault. The AlertmanagerConfig of stack/alertmanager/msteams reads that
+# secret, so list stack/alertmanager/msteams under `resources:` as well.
+#
+# This file creates no store. It reads the ClusterSecretStore named
+# `akv-metrics-stack`, which stack/grafana/examples/eso-css.yaml declares. Copy
+# that file too, unless the store already exists in your cluster.
+#
+# Replace `secret/msteams-webhook-url` with the Key Vault key that holds the
+# webhook URL, if yours carries another name.
+#
+# Use this file or eso-es-msteams-webhook-url-awssm.yaml, never both. They build
+# the same secret.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: msteams-webhook-url
+  namespace: monitoring
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+  labels:
+    app.kubernetes.io/name: alertmanager
+spec:
+  data:
+    - remoteRef:
+        key: secret/msteams-webhook-url
+      secretKey: msteams-webhook-url
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: akv-metrics-stack

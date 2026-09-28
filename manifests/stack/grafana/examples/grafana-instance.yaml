@@ -1,4 +1,8 @@
-# Mounts the claim at the Grafana data directory, where SQLite lives.
+# Example patch on the Grafana named grafana-k8s. Copy it into your own source
+# and list the copy under `patches:`. Copy k8s-pvc-grafana.yaml as well, because
+# this patch mounts that claim by name.
+#
+# It mounts the claim at the Grafana data directory, where SQLite lives.
 # The volume is ReadWriteOnce and Grafana OSS runs one replica, so a rolling
 # update deadlocks: the new pod cannot mount the volume while the old one still
 # holds it. Recreate avoids that, at the cost of a short outage on every update.

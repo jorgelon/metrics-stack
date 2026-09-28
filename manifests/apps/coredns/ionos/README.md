@@ -26,7 +26,11 @@ and dashboards of this release therefore match without any change.
 - The `apps/coredns` directory in `resources:`, for the rules and dashboards.
 - The Prometheus Operator CRDs.
 
-## Usage
+## How to deploy
+
+This directory is a plain kustomization, not a kustomize component. It renders into the
+`monitoring` namespace. List it under `resources:`, next to the parent `apps/coredns`.
+Read [DEPLOYING.md](../../../../DEPLOYING.md) for the full walkthrough.
 
 ```yaml
 resources:

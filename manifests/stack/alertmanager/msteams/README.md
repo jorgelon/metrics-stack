@@ -2,19 +2,35 @@
 
 The shared Microsoft Teams receiver.
 
-A plain kustomization, because it patches nothing.
+A plain kustomization, because it patches nothing. List it in `resources:`.
 
-## Do not reference this directory on its own
+```yaml
+resources:
+  - <release>/stack
+  - <release>/stack/alertmanager/msteams
+```
+
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../../DEPLOYING.md) for the full
+walkthrough. The `stack` path does not bring it in. Add it yourself to route alerts.
+
+```yaml
+resources:
+  - <release>/stack/alertmanager/msteams
+```
+
+## You must supply the secret
 
 It declares a receiver that reads a secret named `msteams-webhook-url`, and it creates no
-such secret. Reference one of the two backends instead. Each one pulls this directory in
-through its own `resources:` list:
+such secret. Copy one of the two ExternalSecret examples from
+[`../examples`](../README.md#the-teams-webhook-secret) to build it:
 
-- [`msteams-awssm`](../msteams-awssm/README.md), for AWS Secrets Manager.
-- [`msteams-azurekv`](../msteams-azurekv/README.md), for Azure Key Vault.
+- `eso-es-msteams-webhook-url-awssm.yaml`, with `eso-ss.yaml`, for AWS Secrets Manager.
+- `eso-es-msteams-webhook-url-azurekv.yaml`, for Azure Key Vault.
 
-Use one backend, never both. They both create the `AlertmanagerConfig` named `teams`, so a
-build that lists the two fails on the duplicate resource.
+Copy one, never both. They build the same secret.
 
 ## Files
 
@@ -34,7 +50,7 @@ ArgoCD sync wave `-2`.
 
 ## Sentinels
 
-None. Both backends hold the values you must supply.
+None. The two ExternalSecret examples hold the values you must supply.
 
 ## References
 

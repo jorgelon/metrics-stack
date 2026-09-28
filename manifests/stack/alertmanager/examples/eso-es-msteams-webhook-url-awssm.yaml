@@ -1,0 +1,28 @@
+# Example ExternalSecret that builds the secret `msteams-webhook-url` from AWS
+# Secrets Manager. The AlertmanagerConfig of stack/alertmanager/msteams reads
+# that secret, so copy this file together with eso-ss.yaml and list
+# stack/alertmanager/msteams under `resources:` as well.
+#
+# Replace `changeme` with the name of the secret in Secrets Manager. That secret
+# holds the webhook URL under the property `msteams-webhook-url`.
+#
+# Use this file or eso-es-msteams-webhook-url-azurekv.yaml, never both. They
+# build the same secret.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: msteams-webhook-url
+  namespace: monitoring
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+  labels:
+    app.kubernetes.io/name: alertmanager
+spec:
+  data:
+    - remoteRef:
+        key: changeme
+        property: msteams-webhook-url
+      secretKey: msteams-webhook-url
+  secretStoreRef:
+    kind: SecretStore
+    name: aws-secretsmanager

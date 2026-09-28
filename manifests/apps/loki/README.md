@@ -2,6 +2,17 @@
 
 Grafana datasource and dashboards for Loki log aggregation.
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough.
+
+```yaml
+resources:
+  - <release>/apps/loki
+```
+
 ## Components
 
 | File / Directory      | Description                                        |

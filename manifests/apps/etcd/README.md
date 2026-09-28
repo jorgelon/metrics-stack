@@ -2,6 +2,18 @@
 
 ServiceMonitor and Grafana dashboard for etcd.
 
+## How to deploy
+
+This directory is a plain kustomization. It sets no `namespace:` of its own. List it
+under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full walkthrough.
+The monitor and the dashboard render into `monitoring`. The Service renders into
+`kube-system`, next to the etcd pods.
+
+```yaml
+resources:
+  - <release>/apps/etcd
+```
+
 ## Components
 
 | File                       | Description                                     |

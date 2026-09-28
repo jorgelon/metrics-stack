@@ -30,7 +30,7 @@ The file `manifests/stack/prometheus/prom-instance.yaml` selects ServiceMonitors
 Every `GrafanaDashboard` and `GrafanaDatasource` uses it in `spec.instanceSelector`.
 The `Alertmanager` instance selects `AlertmanagerConfig` resources by the same label.
 The consumer's root kustomization applies the label, not the component kustomizations.
-Read `README.md` for the consumer side.
+Read `DEPLOYING.md` for the consumer side.
 So a new monitor, rule or dashboard needs no label of its own.
 But if the consumer omits the root label, it stays invisible to Prometheus and Grafana.
 
@@ -39,7 +39,7 @@ The kubernetes-mixin dashboards in this repository depend on that label.
 
 Consumers do not deploy from this tree directly.
 They clone a tag and reference paths such as `../../releases/edge/apps/core`.
-Read the "How to use" section of `README.md`.
+Read `DEPLOYING.md`, which holds the whole consumer side: the layout, the catalog of paths, the namespaces and a worked example. The root `README.md` is an introduction and carries no deployment instructions.
 Deployment is GitOps through ArgoCD.
 Do not propose `kubectl apply`, `kubectl create` or `kubectl delete`.
 
@@ -60,12 +60,10 @@ Prefer a plain kustomization for two reasons.
 It renders on its own, so `kustomize build <dir>` and `kubeconform` test it directly.
 And it sets its own `namespace:` and `labels:`, instead of repeating them in every file.
 
-The four current components, with what each one patches:
+The two current components, with what each one patches:
 
 - `manifests/apps/gateway-api/`, the kube-state-metrics ClusterRole and Deployment that the consumer deploys.
 - `manifests/apps/coredns/eks-auto-mode`, the node-exporter DaemonSet of `manifests/stack`. It is one of the three coredns scrape targets. The parent `apps/coredns` ships the rules and dashboards only, and the consumer adds exactly one target. The other two, `coredns/kubeadm` and `coredns/ionos`, patch nothing and go in `resources:`.
-- `manifests/stack/prometheus/single-pvc`, the Prometheus instance of its parent directory.
-- `manifests/stack/grafana/single-pvc`, the Grafana instance of its parent directory.
 
 A component's transformers rewrite the parent's resources too.
 So a component sets neither `namespace:` nor `labels:`.
@@ -73,20 +71,26 @@ Each of its resources carries its own `namespace:` and its own `app.kubernetes.i
 A component cannot render standalone.
 Render it through a test kustomization that lists it under `components:`.
 
-One exception to `namespace:` in a plain kustomization: a directory that ships a cluster-scoped custom resource sets no `namespace:`.
-Kustomize does not know the scope of a custom resource, so the namespace transformer writes `metadata.namespace` into it.
-Set the namespace per file there instead. `manifests/stack/grafana/azure-sso` is the one case, because of its `ClusterSecretStore`.
-
-Values that the consumer must supply appear as the literal sentinel `changeme`, for example `storageClassName: changeme`.
-A sentinel binds nothing, so a missing overlay fails loudly instead of landing on a default.
-List every sentinel of a directory in its README.
-
 ### Example manifests
 
-An `examples/` directory holds manifests to copy, not to reference.
-It carries no `kustomization.yaml`, so the release never renders it.
-Each file uses `changeme` sentinels.
-The current ones are `manifests/stack/grafana/examples`, `manifests/addons/karma/examples` and `manifests/apps/quarkus/examples`.
+A manifest that holds the literal sentinel `changeme` is an example, never a resource and never a component.
+It lives in an `examples/` sub-directory of the component it belongs to.
+That directory carries no `kustomization.yaml`, so the release never renders it, and no kustomization lists it under `resources:` or `components:`.
+The current ones are `manifests/stack/alertmanager/examples`, `manifests/stack/grafana/examples`, `manifests/stack/prometheus/examples`, `manifests/addons/karma/examples` and `manifests/apps/quarkus/examples`.
+
+Every other directory renders complete.
+It needs no overlay to work, so a build of it is either deployable or broken, never quietly useless.
+A sentinel binds nothing: a claim stays unbound, a mail alert goes nowhere, a SecretStore points at no region.
+Inside an example that failure is the point, because the consumer replaces the value before the manifest ever reaches a cluster.
+Inside a rendered resource the same failure lands at run time, far from the consumer who forgot the overlay.
+
+An example carries no `namespace:` and no label from a parent kustomization, because the consumer copies it into a kustomization this repository does not control.
+So each file holds its own `metadata.namespace` and its own `app.kubernetes.io/name` label, unless the resource is cluster-scoped.
+Its header comment says what to replace and which field to list the copy under, `resources:` or `patches:`.
+An `examples/` directory carries no `README.md` of its own.
+List every file of it in the README of the component that owns it.
+Give each file its sentinels, the folder the consumer copies it into, and the field the consumer lists it under.
+A patch goes into `overlays/` and a resource goes into `instance/`.
 
 ### Vendored upstream manifests
 
@@ -144,9 +148,10 @@ A dashboard is sourced by `url:`, by `grafanaCom.id:` or by inline JSON.
 
 ## Hard rules
 
-- Never set `namespace:` in a root kustomization. Each component fixes its own namespace. The `metrics-server` and one etcd Service live in `kube-system` on purpose, and a root override breaks them. The "Namespaces" table of `README.md` must list every component that deploys outside `monitoring`.
+- Never set `namespace:` in a root kustomization. Each component fixes its own namespace. The `metrics-server` and one etcd Service live in `kube-system` on purpose, and a root override breaks them. The namespaces table of `DEPLOYING.md` must list every component that deploys outside `monitoring`.
 - The root `README.md` must link to the README of every component under `manifests/stack/`, `manifests/apps/` and `manifests/addons/`. A new component directory means a new table row.
 - Every component directory needs its own `README.md`: purpose, files, prerequisites and references. The old `doc/` folder went into these. Do not recreate it.
+- Every component `README.md` needs a "How to deploy" section. It says whether the directory is a plain kustomization or a component. It names the namespace and the field the consumer lists it under. It holds a `resources:` or `components:` block with the `<release>` shorthand, and a link to `DEPLOYING.md`.
 - A component that ships Grafana dashboards must have a "Dashboard Sources" section in its README. For each dashboard, name the upstream git URL, the grafana.com ID with its URL, or the official project documentation. This covers inline JSON and `grafanaCom.id` alike.
 - Record user-visible changes in `CHANGELOG.md` under `## [Unreleased]`. The format is Keep a Changelog 1.1.0. Prefix each entry with `**stack**:`, `**apps**:` or `**addons**:`. Releases are SemVer git tags such as `v0.0.x`.
 - A bash script starts with `set -euf -o pipefail` on the line after the shebang.
@@ -157,8 +162,10 @@ A dashboard is sourced by `url:`, by `grafanaCom.id:` or by inline JSON.
 - Keycloak: the Keycloak CR needs `metrics-enabled=true` and `event-metrics-user-enabled=true`. The ServiceMonitor here is hand-made.
 - Quarkus: upstream ships no standard ServiceMonitor. Write one per application, starting from `apps/quarkus/examples`.
 - Loki: this component adds a Grafana datasource that points at `http://loki.loki.svc.cluster.local:3100`. The dashboards come from loki-mixin-compiled.
-- Grafana: the instance reads environment variables from an optional `grafana-env` Secret and carries Stakater Reloader annotations. The consumer supplies that Secret. Storage lives in the `single-pvc` component, not in the instance.
+- Grafana: the instance reads environment variables from an optional `grafana-env` Secret and carries Stakater Reloader annotations. The consumer supplies that Secret, or copies `stack/grafana/examples/eso-css.yaml` and `eso-es-grafana-env.yaml` to build it from Azure Key Vault. Storage lives in `stack/grafana/examples`, not in the instance.
 - kubernetes-mixin: the scheduler, controller-manager and kube-proxy alerts are disabled on purpose, because managed control planes do not expose them.
+- Prometheus and Alertmanager: the shipped instances declare no storage and no container size. Both values track the cluster, so `stack/prometheus/examples/prom-instance.yaml` and `stack/alertmanager/examples/prom-am-instance.yaml` carry them. The `--config-reloader-cpu-limit=0` argument in `manifests/stack/kustomization.yaml` removes the 10m CPU limit that the operator gives every config-reloader sidecar. Without it the request in either example is above the limit and the StatefulSet is invalid.
+- Alertmanager: the instance ships with no routing. `stack/alertmanager/msteams` is the one deployable receiver, and it reads a secret it does not create. The mail receiver and both webhook secret sources are examples.
 
 ## Upstream rule and dashboard sources
 

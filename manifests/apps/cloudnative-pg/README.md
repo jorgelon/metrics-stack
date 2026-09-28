@@ -2,6 +2,17 @@
 
 PodMonitors, PrometheusRules, and Grafana dashboard for the CloudNative-PG operator and PostgreSQL clusters.
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough.
+
+```yaml
+resources:
+  - <release>/apps/cloudnative-pg
+```
+
 ## Components
 
 | File                              | Description                                    |

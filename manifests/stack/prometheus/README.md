@@ -2,6 +2,18 @@
 
 Prometheus instance managed by the Prometheus Operator.
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough. The `stack` path already brings this directory in. Reference it alone only
+to deploy this part without the rest.
+
+```yaml
+resources:
+  - <release>/stack/prometheus
+```
+
 ## Files
 
 | File                              | Description                              |
@@ -13,35 +25,45 @@ Prometheus instance managed by the Prometheus Operator.
 | `k8s-crb-prometheus.yaml`         | ClusterRoleBinding                       |
 | `grafana-db-prometheus.yaml`      | Grafana dashboard for Prometheus itself  |
 
-## Components
+## Examples
 
-| Component | Adds |
-|---|---|
-| [`single-pvc`](single-pvc/README.md) | One replica keeping 7 days on a 100Gi volume |
+`examples/` holds manifests to copy into your own source. The directory carries no
+`kustomization.yaml`, so the release never renders it. Copy a file, replace every
+`changeme`, and list the copy in your own kustomization. A patch goes into your
+`overlays/` folder, and a resource goes into your `instance/` folder.
+
+| File | What it does | Copy into | List under |
+|---|---|---|---|
+| `prom-instance.yaml` | One replica keeping 7 days on a 100Gi volume, with both containers sized | `overlays/` | `patches:` |
 
 ```yaml
 resources:
   - <release>/stack
-components:
-  - <release>/stack/prometheus/single-pvc
+patches:
+  - path: overlays/prom-instance.yaml
 ```
 
-The base declares no replicas, no retention and no storage. Without the component the
-operator runs one replica writing to an `emptyDir`, and every restart loses the data. You
-must overlay the `changeme` storage class the component carries. Read its README.
+The base declares no replicas, no retention, no storage and no container size. Without a
+patch like the example, the operator runs one replica writing to an `emptyDir` with the
+default retention, and every restart loses the data. This is the simple shape: one
+replica, local disk, no high availability, no long term storage and no remote write.
 
-Two alternatives exist. One is two replicas for high availability. The other is remote
-write to a long term store, such as Thanos or Mimir. This release ships no component for
-either one yet.
+Replace `storageClassName: changeme` with a storage class of your cluster. Keep `stack`
+under `resources:`, because a patch with no target fails the build. 100Gi holds 7 days on
+a mid-sized cluster. The operator does not resize an existing claim, so a later change
+needs a new claim, or the StatefulSet deleted with `--cascade=orphan`.
+
+Two alternatives exist. One is two replicas for high availability, where each replica
+keeps its own copy on its own volume and Alertmanager deduplicates the alerts. The other
+is remote write to a long term store, such as Thanos or Mimir, where local retention drops
+to a few hours. This release ships no example for either one yet.
 
 ## Sizing
 
-`prom-instance.yaml` sizes the config-reloader sidecar. Its memory request equals its
-limit, and it declares no CPU limit.
-
-The prometheus container itself is not sized anywhere. It tracks the number of series the
-cluster produces, and no two clusters agree on that, so set it in the consuming
-kustomization:
+`prom-instance.yaml` sizes neither container. The prometheus container tracks the number of
+series the cluster produces. No two clusters agree on that, so the size belongs in the
+consuming kustomization. `examples/prom-instance.yaml` carries both sizes, in the same
+patch as the storage:
 
 ```yaml
 # overlays/prom-instance.yaml
@@ -52,10 +74,23 @@ metadata:
 spec:
   resources:
     requests:
-      cpu: 200m
+      cpu: 500m
+      memory: 4Gi
     limits:
-      memory: 3Gi
+      memory: 4Gi
+  containers:
+    - name: config-reloader
+      resources:
+        requests:
+          cpu: 100m
+          memory: 100Mi
+        limits:
+          memory: 100Mi
 ```
+
+Each memory request equals its limit, so the pod lands in the Guaranteed QoS class for
+memory. Neither container declares a CPU limit. 500m CPU and 4Gi of memory is a starting
+point. Raise it from the memory that the container actually uses.
 
 ## Scrape Classes
 

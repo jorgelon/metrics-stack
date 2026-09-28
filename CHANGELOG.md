@@ -14,6 +14,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [0.0.21-alpha8] - 2026-09-28
+
+### Added
+- a `.gitignore` that holds `/later/`, a folder for work that is not ready for a release. The folder stays on disk and never reaches a commit
+- `DEPLOYING.md`, the consumer walkthrough. It holds the suggested layout of your own source, the namespaces table, a catalog of every path, and a worked example. It also holds the rule for `resources:` against `components:` against a copy. The suggested layout is a root `kustomization.yaml` with no `namespace:`. Next to it go an `instance/` folder for copied example resources and an `overlays/` folder for copied example patches
+- a "How to deploy" section in the README of every component under `manifests/stack/`, `manifests/apps/` and `manifests/addons/`. Each one names the namespace, the field and the path, and links to `DEPLOYING.md`
+
+### Changed
+- **BREAKING**: an `examples/` directory no longer carries a `README.md`. Its content moved into the README of the component that owns it, under an "Examples" heading. Each file now lists the folder you copy it into and the field you list the copy under. A patch goes into `overlays/` and a resource goes into `instance/`. The five merged READMEs were `stack/prometheus/examples`, `stack/alertmanager/examples`, `stack/grafana/examples`, `addons/karma/examples` and `apps/quarkus/examples`
+- the root `README.md` is an introduction only. The "How to use", "resources:, components: or a copy", "examples/, the third kind" and "Namespaces" sections moved to `DEPLOYING.md`
+- **BREAKING**: a manifest that holds the literal sentinel `changeme` is now an example, never a resource and never a component. It lives in an `examples/` sub-directory, which carries no `kustomization.yaml`. The release never renders that directory, and you reference it in neither `resources:` nor `components:`. You copy the file, replace every sentinel, and list your copy in your own kustomization. Every directory you do reference now renders complete, so it needs no overlay to work. The rule is written in `CLAUDE.md` and in the root `README.md`. Two components remain: `apps/gateway-api` and `apps/coredns/eks-auto-mode`. `manifests/stack` now holds none
+- **stack**: **BREAKING**: `stack/prometheus/single-pvc` is now `stack/prometheus/examples`. Remove `stack/prometheus/single-pvc` from `components:`, copy `examples/prom-instance.yaml` into your own source, replace `storageClassName: changeme`, and list the copy under `patches:`
+- **stack**: **BREAKING**: `stack/grafana/single-pvc` is gone. Its two files are now `stack/grafana/examples/k8s-pvc-grafana.yaml` and `stack/grafana/examples/grafana-instance.yaml`. Remove `stack/grafana/single-pvc` from `components:`, copy both files, replace `storageClassName: changeme`, and list the claim under `resources:` and the patch under `patches:`
+- **stack**: **BREAKING**: `stack/grafana/azure-sso` is gone. Its two files are now `stack/grafana/examples/eso-css.yaml` and `stack/grafana/examples/eso-es-grafana-env.yaml`. Remove `stack/grafana/azure-sso` from `resources:`, copy both files, replace `tenantId` and the host part of `vaultUrl`, and list both copies under `resources:`. Set no `namespace:` in the kustomization that lists them, because `eso-css.yaml` is cluster-scoped
+- **stack**: **BREAKING**: `stack/alertmanager/smtp` is gone. Its config is now `stack/alertmanager/examples/prom-amc-smtp.yaml`. Remove `stack/alertmanager/smtp` from `resources:`, copy the file, replace `from`, `to`, `smarthost` and the subject prefix, and list the copy under `resources:`
+- **stack**: **BREAKING**: `stack/alertmanager/msteams-awssm` and `stack/alertmanager/msteams-azurekv` are gone. `stack/alertmanager/msteams` is now the one deployable Teams receiver, and you list it under `resources:` directly. Replace each removed directory with `stack/alertmanager/msteams` plus one copied ExternalSecret example: `examples/eso-es-msteams-webhook-url-awssm.yaml` with `examples/eso-ss.yaml` for AWS Secrets Manager, or `examples/eso-es-msteams-webhook-url-azurekv.yaml` for Azure Key Vault. Copy one, never both
+- **stack**: **BREAKING**: `stack/alertmanager/prom-am-instance.yaml` no longer declares storage. It carried `storageClassName: changeme` in a manifest the release renders. Copy `stack/alertmanager/examples/prom-am-instance.yaml`, replace the storage class, and list the copy under `patches:`. Without it the operator writes the notification log and the silences to an `emptyDir`
+- **stack**: **BREAKING**: neither shipped instance sizes its containers any more. `stack/prometheus/prom-instance.yaml` and `stack/alertmanager/prom-am-instance.yaml` declared the `config-reloader` requests and limits, and the Alertmanager also sized its own container. Both values track the cluster, so they moved into the same example that carries the storage. The Prometheus example now also sizes the `prometheus` container, at a 500m CPU request and 4Gi of memory. That container was sized nowhere before
+
+### Deprecated
+### Removed
+- **apps**: **BREAKING**: `apps/blackbox-exporter`, `apps/jetstream` and `apps/trivy-operator` left the repository. None of them shipped a `kustomization.yaml`, so a consumer who listed one got `must build at directory: not a valid directory`. Two of them also held unrendered Helm expressions such as `{{ .Values.jetstream.namespace }}`. Each one returns once it renders
+
+### Fixed
+- **stack**: the operator now runs with `--config-reloader-cpu-limit=0`, so the `config-reloader` sidecar of the Prometheus and the Alertmanager instances gets no CPU limit. The operator applied a 10m CPU limit to that sidecar by default. That default limit survived the merge with the resources block of each instance. The CPU request of 100m was then above the limit, so the `prometheus-k8s` StatefulSet was invalid and the operator stopped reconciling it
+
+### Security
+
 ## [0.0.21-alpha7] - 2026-09-28
 
 ### Added

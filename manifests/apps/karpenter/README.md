@@ -2,6 +2,17 @@
 
 ServiceMonitor, PrometheusRule alerts, and Grafana dashboards for Karpenter node autoscaler.
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough.
+
+```yaml
+resources:
+  - <release>/apps/karpenter
+```
+
 ## Components
 
 | File                                           | Description                        |

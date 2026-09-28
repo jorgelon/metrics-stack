@@ -4,6 +4,18 @@ ServiceMonitors and PrometheusRule alerts for [MetalLB](https://metallb.io/), th
 
 MetalLB serves its metrics over HTTPS on port `9120` for both the controller and the speaker, and on port `9121` for the FRR sidecar when the speaker runs in FRR mode. The upstream chart only creates the headless metrics Services when `prometheus.serviceMonitor.enabled=true`, so this component ships its own copies of them and keeps the ServiceMonitors here — a stock MetalLB install needs no monitoring-related values.
 
+## How to deploy
+
+This directory is a plain kustomization. It sets no `namespace:` of its own. List it
+under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full walkthrough.
+The monitors and the rule render into `monitoring`. The two Services render into
+`metallb-system`, next to MetalLB.
+
+```yaml
+resources:
+  - <release>/apps/metallb
+```
+
 ## Components
 
 | File                                      | Description                                                    |

@@ -2,6 +2,18 @@
 
 Official Grafana Operator manifests, version-pinned.
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough. The `stack` path already brings this directory in. Reference it alone only
+to deploy this part without the rest. Name the version directory in the path.
+
+```yaml
+resources:
+  - <release>/stack/grafana-operator/<version>
+```
+
 ## Updating
 
 Run the download script to fetch a new operator release:

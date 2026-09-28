@@ -2,6 +2,17 @@
 
 PrometheusRule alerts and a Grafana dashboard for the External Secrets Operator.
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough.
+
+```yaml
+resources:
+  - <release>/apps/external-secrets
+```
+
 ## Components
 
 | File                                                | Description                                   |

@@ -1,0 +1,47 @@
+# Example patch on the Prometheus named k8s. Copy it into your own source and
+# list the copy under `patches:`. It gives one replica keeping 7 days on its own
+# volume. This is the simple shape: no high availability, no long term storage,
+# no remote write.
+#
+# 100Gi holds 7 days on a mid-sized cluster. A small cluster lowers the size.
+# The storage class is cluster-specific: replace `changeme` with a class of your
+# cluster. The sentinel binds nothing, so a forgotten replacement leaves the pod
+# Pending instead of landing the time series on the wrong disk.
+#
+# The prometheus container reserves half a CPU and 4Gi of memory. The memory
+# request equals the limit, so the pod lands in the Guaranteed QoS class for
+# memory. There is no CPU limit, to avoid throttling a query burst. A cluster
+# with many more series needs other numbers.
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: k8s
+spec:
+  replicas: 1
+  retention: 7d
+  resources:
+    requests:
+      cpu: 500m
+      memory: 4Gi
+    limits:
+      memory: 4Gi
+  containers:
+    - name: config-reloader
+      # No CPU limit here. The operator default of 10m is removed by the
+      # --config-reloader-cpu-limit=0 argument that the kustomization.yaml
+      # of manifests/stack adds to the operator. Without that argument the
+      # request below is above the limit and the StatefulSet is invalid.
+      resources:
+        requests:
+          cpu: 100m
+          memory: 100Mi
+        limits:
+          memory: 100Mi
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 100Gi
+        storageClassName: changeme

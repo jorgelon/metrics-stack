@@ -1,13 +1,24 @@
-# Builds the grafana-env secret that grafana-instance.yaml loads with envFrom.
+# Example ExternalSecret that builds the grafana-env secret, which the Grafana
+# instance of the parent directory already loads with envFrom. It turns on Azure
+# AD single sign-on. Copy it into your own source, together with eso-css.yaml,
+# and list both under `resources:`.
+#
 # Key Vault names cannot contain an underscore, so each secret is named GF-...
-# and the rewrite turns the dashes back into underscores.
+# and the rewrite turns the dashes back into underscores. The template below
+# fixes the settings that never change, and fills the rest from the vault.
+#
+# Without this file Grafana starts with the local login form and the admin
+# credentials that the Grafana Operator generates.
+#
+# The namespace ships here, because the kustomization that lists eso-css.yaml
+# can set no `namespace:` of its own.
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: grafana-env
-  # This kustomization sets no `namespace:`, because eso-css.yaml is
-  # cluster-scoped. So the namespace ships here.
   namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
 spec:
   dataFrom:
     - find:

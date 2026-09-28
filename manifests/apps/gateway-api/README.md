@@ -11,17 +11,17 @@ API defines no metrics of its own — there is no spec'd `/metrics` endpoint. Th
 kube-state-metrics to convert the custom resources into gauges. Request rates,
 latency and error codes come only from the implementation.
 
-## How to include it
+## How to deploy
 
-This directory is a **kustomize component**, not a plain kustomization. It goes
-in `components:`, alongside — not instead of — the kube-state-metrics you
-already deploy:
+This directory is a kustomize component, not a plain kustomization. List it under
+`components:`, next to the kube-state-metrics you already deploy, never instead of it.
+Read [DEPLOYING.md](../../../DEPLOYING.md) for the full walkthrough.
 
 ```yaml
 resources:
-  - ../../releases/edge/stack            # already brings stack/kube-state-metrics
+  - <release>/stack            # already brings stack/kube-state-metrics
 components:
-  - ../../releases/edge/apps/gateway-api
+  - <release>/apps/gateway-api
 ```
 
 Listed under `resources:` instead, the build fails with `no resource matches

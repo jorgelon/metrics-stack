@@ -2,6 +2,17 @@
 
 ServiceMonitors, dashboards, and recording rules for the Kubernetes control plane (API server, kubelet, scheduler, controller manager).
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough.
+
+```yaml
+resources:
+  - <release>/apps/kubernetes
+```
+
 ## Components
 
 | Directory / File    | Description                                      |

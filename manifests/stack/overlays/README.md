@@ -2,6 +2,13 @@
 
 Kustomize overlay patches for Day 2 configuration of stack components.
 
+## How to deploy
+
+You do not. This directory carries no `kustomization.yaml`, so the release never renders
+it. List it under `resources:` and the build fails with `must build at directory: not a
+valid directory`. Copy a file into your own `overlays/` folder instead, and list the copy
+under `patches:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full walkthrough.
+
 ## Available Overlays
 
 | File                  | Description                          |

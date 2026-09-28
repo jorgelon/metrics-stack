@@ -1,17 +1,17 @@
-# coredns-node-metrics
+# eks-auto-mode
 
-Exposes CoreDNS metrics on **EKS Auto Mode** clusters.
+Exposes CoreDNS metrics on EKS Auto Mode clusters.
 
 ## Why this is needed
 
-Auto Mode does not run the usual CoreDNS Deployment. DNS is served by CoreDNS running as a
-system service on each node, so there is no `kube-dns` Service, no CoreDNS pods, and nothing
-for the stack's stock `ServiceMonitor` to select. See
+Auto Mode does not run the usual CoreDNS Deployment. CoreDNS runs as a system service on
+each node instead. There is no `kube-dns` Service, no CoreDNS pods, and nothing for the
+stock `ServiceMonitor` of the stack to select. See
 [CoreDNS considerations](https://docs.aws.amazon.com/eks/latest/userguide/auto-networking.html#coredns-considerations).
 
 The node-level CoreDNS still serves the standard Prometheus endpoint, but it binds
-**`127.0.0.1:9153` only** — unreachable from the Prometheus pod. The EKS metrics API
-(`metrics.eks.amazonaws.com`) does not help either: it only exposes `etcd`, `kcm` and `ksh`.
+`127.0.0.1:9153` only, which the Prometheus pod cannot reach. The EKS metrics API
+(`metrics.eks.amazonaws.com`) does not help either. It exposes `etcd`, `kcm` and `ksh` only.
 
 ## What it does
 
@@ -23,13 +23,13 @@ its containers share the node's loopback. This component:
    node-exporter itself is exposed on 9100.
 2. Adds a headless Service `coredns-node` over the node-exporter pods on that port.
 3. Adds a `ServiceMonitor` that scrapes it, reusing the `node-exporter-sa-token` Bearer
-   credential — the `node-exporter` ClusterRole already grants `get` on the `/metrics`
+   credential. The `node-exporter` ClusterRole already grants `get` on the `/metrics`
    nonResourceURL.
 
-The Service carries `k8s-app: kube-dns` and the ServiceMonitor uses `jobLabel: k8s-app`, so
-series come out as `job="kube-dns"` and the stack's existing CoreDNS PrometheusRule and Grafana
-dashboards (`metrics-stack/*/apps/coredns`) match without modification. A `nodename` relabel
-distinguishes the per-node instances.
+The Service carries `k8s-app: kube-dns` and the ServiceMonitor uses `jobLabel: k8s-app`.
+Series come out as `job="kube-dns"`, so the CoreDNS rules and dashboards of
+`apps/coredns` match them without a change. A `nodename` relabel distinguishes the
+per-node instances.
 
 ## Requirements
 
@@ -37,19 +37,25 @@ distinguishes the per-node instances.
   (the component hardcodes that namespace).
 - Prometheus Operator CRDs.
 
-## Usage
+## How to deploy
 
-Referenced from the parent `kustomize-stack/kustomization.yaml`:
+This directory is a kustomize component, because it patches the node-exporter DaemonSet
+of `stack`. List it under `components:`, and keep the parent `apps/coredns` and the
+`stack` path under `resources:`. Listed under `resources:` instead, the build fails.
+Read [DEPLOYING.md](../../../../DEPLOYING.md) for the full walkthrough.
 
 ```yaml
+resources:
+  - <release>/stack
+  - <release>/apps/coredns
 components:
-  - coredns-node-metrics
+  - <release>/apps/coredns/eks-auto-mode
 ```
 
 ## Caveats
 
 - The stock `servicemonitor-coredns` (targeting `kube-system`) stays in the render and finds zero
-  targets. It is inert; drop it with a `patches` delete at the parent if the noise matters.
+  targets. It is inert. To remove the noise, drop it with a `patches` delete at the parent.
 - The `coredns_forward` alert group never fires: `coredns_forward_request_duration_seconds`,
   `coredns_forward_responses_total` and `coredns_forward_healthcheck_failures_total` are not
   exposed by the Auto Mode CoreDNS build.

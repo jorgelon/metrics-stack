@@ -3,6 +3,17 @@
 PrometheusRule alerts and Grafana dashboards for CoreDNS, plus one scrape component per
 platform.
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough. It ships no scrape target. Add exactly one platform directory next to it.
+
+```yaml
+resources:
+  - <release>/apps/coredns
+```
+
 ## Files
 
 | File                         | Description                           |

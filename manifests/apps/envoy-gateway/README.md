@@ -1,5 +1,16 @@
 # Envoy Gateway Monitoring
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough.
+
+```yaml
+resources:
+  - <release>/apps/envoy-gateway
+```
+
 ## Overview
 
 Monitoring for Envoy Gateway as a Gateway API implementation, covering both the

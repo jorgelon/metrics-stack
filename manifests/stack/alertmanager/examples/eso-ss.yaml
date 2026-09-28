@@ -1,0 +1,21 @@
+# Example SecretStore for the MS Teams webhook URL held in AWS Secrets Manager.
+# Copy it into your own source, together with
+# eso-es-msteams-webhook-url-awssm.yaml, and list both under `resources:`.
+#
+# The store uses the default AWS provider chain, so the external-secrets pod
+# needs an IAM role with read access to the secret. Replace `changeme` with the
+# region of that secret.
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: aws-secretsmanager
+  namespace: monitoring
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+  labels:
+    app.kubernetes.io/name: alertmanager
+spec:
+  provider:
+    aws:
+      service: SecretsManager
+      region: changeme

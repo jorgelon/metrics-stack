@@ -1,0 +1,45 @@
+# Example patch on the Alertmanager named k8s-alertmanager. Copy it into your
+# own source and list the copy under `patches:`. It gives the instance a 2Gi
+# volume and sizes both of its containers. Without it the operator writes the
+# notification log and the silences to an emptyDir, and neither container
+# reserves anything.
+#
+# 2Gi holds the notification log and the silences on a mid-sized cluster. The
+# storage class is cluster-specific: replace `changeme` with a class of your
+# cluster. The sentinel binds nothing, so a forgotten replacement leaves the pod
+# Pending instead of landing the log on the wrong disk.
+#
+# Each memory request equals its limit, so the pod lands in the Guaranteed QoS
+# class for memory. Neither container declares a CPU limit, to avoid throttling
+# a bursty reload.
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: k8s-alertmanager
+spec:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 100Mi
+    limits:
+      memory: 100Mi
+  containers:
+    - name: config-reloader
+      # No CPU limit here. The operator default of 10m is removed by the
+      # --config-reloader-cpu-limit=0 argument that the kustomization.yaml
+      # of manifests/stack adds to the operator. Without that argument the
+      # request below is above the limit and the StatefulSet is invalid.
+      resources:
+        requests:
+          cpu: 50m
+          memory: 150Mi
+        limits:
+          memory: 150Mi
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi
+        storageClassName: changeme

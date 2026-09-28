@@ -11,10 +11,10 @@
 #   @receiver=...          keep only the alerts that reached one receiver
 #
 # The receiver is addressed as <namespace>/<AlertmanagerConfig>/<receiver>.
-# `monitoring/teams/teams` is the receiver that the release components
-# stack/alertmanager/msteams-azurekv and msteams-awssm create. If you use the
-# smtp component instead, the value is `monitoring/smtp/smtp`. If no receiver
-# matches, Karma opens on an empty page and shows no error.
+# `monitoring/teams/teams` is the receiver that stack/alertmanager/msteams
+# creates. If you copied stack/alertmanager/examples/prom-amc-smtp.yaml instead,
+# the value is `monitoring/smtp/smtp`. If no receiver matches, Karma opens on an
+# empty page and shows no error.
 apiVersion: v1
 kind: ConfigMap
 metadata:

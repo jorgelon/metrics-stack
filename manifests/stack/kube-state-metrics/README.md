@@ -2,6 +2,18 @@
 
 Hand-crafted manifests for kube-state-metrics — generates Prometheus metrics from Kubernetes object state.
 
+## How to deploy
+
+This directory is a plain kustomization. It renders into the `monitoring` namespace.
+List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
+walkthrough. The `stack` path already brings this directory in. Reference it alone only
+to deploy this part without the rest.
+
+```yaml
+resources:
+  - <release>/stack/kube-state-metrics
+```
+
 ## Components
 
 | File                            | Description                             |

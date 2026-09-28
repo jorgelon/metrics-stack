@@ -1,6 +1,0 @@
-namespace: monitoring
-resources:
-  - prom-amc-smtp.yaml
-labels:
-  - pairs:
-      app.kubernetes.io/name: alertmanager

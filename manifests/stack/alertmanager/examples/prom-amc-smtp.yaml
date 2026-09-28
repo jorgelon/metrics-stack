@@ -1,13 +1,18 @@
-# Mail alerting, for sites that do not use MS Teams. The sender, the recipient,
-# the smart host and the subject prefix are site-specific. Set the prefix to the
-# environment name, so a reader can tell a staging alert from a live one.
+# Example mail receiver, for sites that do not use MS Teams. Copy it into your
+# own source and list the copy under `resources:`.
+#
+# The sender, the recipient, the smart host and the subject prefix are
+# site-specific, so each one is `changeme`. Set the prefix to the environment
+# name, so a reader can tell a staging alert from a live one.
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: AlertmanagerConfig
 metadata:
   name: smtp
+  namespace: monitoring
   annotations:
     argocd.argoproj.io/sync-wave: "-2"
   labels:
+    app.kubernetes.io/name: alertmanager
     # alertmanagerConfigSelector in prom-am-instance.yaml matches this
     app.kubernetes.io/part-of: metrics-stack
 spec:

@@ -32,18 +32,7 @@ spec:
     fsGroup: 2000
     runAsNonRoot: true
     runAsUser: 1000
-  # Replicas, retention and storage are not declared here. Add the single-pvc
-  # component for one replica keeping 7 days on its own volume.
-  # The prometheus container itself is not sized here either. It tracks the
-  # number of series the cluster produces, so it belongs in the consuming
-  # overlay.
-  # Memory request equals the limit, so the pod lands in the Guaranteed QoS
-  # class for memory. No CPU limit, to avoid throttling a bursty reload.
-  containers:
-    - name: config-reloader
-      resources:
-        requests:
-          cpu: 100m
-          memory: 100Mi
-        limits:
-          memory: 100Mi
+  # Replicas, retention, storage and container sizes are not declared here. Copy
+  # examples/prom-instance.yaml into your own source for one replica keeping
+  # 7 days on its own volume, with both containers sized. Every one of those
+  # values tracks the cluster, so this directory sets none of them.

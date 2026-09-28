@@ -15,3 +15,13 @@ patches:
       - op: add
         path: /spec/template/spec/containers/0/args/-
         value: --kubelet-insecure-tls
+  # The operator gives every config-reloader sidecar a 10m CPU limit. The value
+  # 0 removes the limit, so a reload burst is not throttled. The Prometheus and
+  # the Alertmanager instances set the CPU request of their own sidecar.
+  - target:
+      kind: Deployment
+      name: prometheus-operator
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --config-reloader-cpu-limit=0
