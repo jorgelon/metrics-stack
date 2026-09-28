@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - dashboards
   # - loki-infra # wait until logs stack is ready

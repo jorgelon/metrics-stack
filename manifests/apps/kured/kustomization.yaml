@@ -1,3 +1,4 @@
+namespace: monitoring
 resources:
   - prom-pm-kured.yaml
   - prom-rule-kured.yaml

@@ -51,7 +51,7 @@ A component exists where the correct content depends on the platform or on the c
 The current components are:
 
 - `manifests/apps/gateway-api/`, which patches the consumer's kube-state-metrics.
-- `manifests/apps/coredns/kubeadm`, `coredns/eks-auto-mode` and `coredns/ionos`, one scrape target per platform. The parent `apps/coredns` ships the rules and dashboards only. A consumer must add exactly one of the three.
+- `manifests/apps/coredns/eks-auto-mode` and `coredns/ionos`, two of the three scrape targets. The parent `apps/coredns` ships the rules and dashboards only. A consumer must add exactly one scrape target. The third one, `coredns/kubeadm`, is a plain kustomization and goes in `resources:`, because it patches nothing.
 - `manifests/stack/prometheus/single-pvc` and `manifests/stack/grafana/single-pvc`, which add persistent storage.
 - `manifests/stack/grafana/azure-sso`, which adds Azure AD single sign-on through the External Secrets Operator.
 - `manifests/stack/alertmanager/msteams`, `msteams-awssm`, `msteams-azurekv` and `smtp`, the notification receivers. The `msteams` component holds the shared receiver. Consumers reference `msteams-awssm` or `msteams-azurekv`, which pull `msteams` in through their own `components:`.

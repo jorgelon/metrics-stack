@@ -3,8 +3,10 @@ resources:
   - grafana-db-coredns-mixin.yaml # mixin
   - grafana-db-coredns.yaml # dotdc
   - prom-rule-coredns.yaml
-# The scrape target depends on the platform. Add exactly one of the components
-# kubeadm/, eks-auto-mode/ or ionos/ in the consuming kustomization.
+# The scrape target depends on the platform. Add exactly one of kubeadm/,
+# eks-auto-mode/ or ionos/ in the consuming kustomization. kubeadm/ is a plain
+# kustomization and goes in resources:. The other two are kustomize components
+# and go in components:.
 labels:
   - pairs:
       app.kubernetes.io/name: coredns

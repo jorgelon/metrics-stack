@@ -6,7 +6,7 @@ Scrapes CoreDNS on IONOS Managed Kubernetes, through the pods.
 
 IONOS Managed Kubernetes ships a `kube-dns` Service that does not declare the `metrics`
 port. The Service exists and the CoreDNS pods serve metrics on port 9153, but the
-`ServiceMonitor` of the `kubeadm` component has nothing to scrape.
+`ServiceMonitor` of the `kubeadm` directory has nothing to scrape.
 
 This component goes straight to the pods instead.
 

@@ -6,7 +6,7 @@ Scrapes CoreDNS on a kubeadm cluster, through the `kube-dns` Service.
 
 A kubeadm cluster runs CoreDNS as a Deployment in `kube-system`, behind a `kube-dns`
 Service that declares a port named `metrics`. This is the standard layout, so this is the
-component most clusters use.
+directory most clusters use.
 
 ## What it does
 
@@ -24,14 +24,17 @@ credential. `jobLabel: k8s-app` keeps the series as `job="kube-dns"`.
 
 ## Usage
 
+This directory is a plain kustomization, not a kustomize component. It goes in
+`resources:`.
+
 ```yaml
 resources:
   - <release>/apps/coredns
-components:
   - <release>/apps/coredns/kubeadm
 ```
 
 ## Caveats
 
 Use one of `kubeadm`, `eks-auto-mode` or `ionos`, never two. They all create a scrape
-target named `coredns`.
+target named `coredns`. `eks-auto-mode` and `ionos` are kustomize components, so they go
+in `components:` instead.

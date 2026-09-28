@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [0.0.21-alpha6] - 2026-09-28
+
+### Added
+### Changed
+- **apps**: **BREAKING**: `coredns/kubeadm` is now a plain kustomization instead of a kustomize component. It adds a ServiceMonitor and patches nothing, so it needs no component. Move it from `components:` to `resources:`. It now sets its own `namespace: monitoring` and its own `app.kubernetes.io/name: coredns` label, which it took from the parent before. `coredns/eks-auto-mode` and `coredns/ionos` stay components
+- **apps**: `kured/` and `loki/` now set `namespace: monitoring` in their own `kustomization.yaml`. Both relied on the consumer for the namespace, so a consumer without a root namespace landed them in `default`
+
+### Deprecated
+### Removed
+### Fixed
+### Security
+
 ## [0.0.21-alpha5] - 2026-09-25
 
 ### Added
