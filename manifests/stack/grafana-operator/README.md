@@ -28,6 +28,11 @@ Run the download script to fetch a new operator release:
 Then repoint the `resources:` entry of `kustomization.yaml` in this directory to the new
 version directory.
 
+The operator does not upgrade Grafana. The consumer chooses the Grafana version with an
+`images:` entry, as the README of `stack/grafana` describes. Compare that version with the
+default of the new operator release on the
+[versioning page](https://grafana.github.io/grafana-operator/docs/versioning/).
+
 ## References
 
 - [Grafana Operator](https://grafana.github.io/grafana-operator/)

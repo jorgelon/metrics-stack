@@ -1,0 +1,8 @@
+# Kustomize configuration that adds spec.version of every Grafana to the fields
+# that the images field of a kustomization changes. By default images changes
+# container images only. kustomization.yaml lists this file under
+# configurations, and a consumer kustomization inherits it.
+images:
+  - kind: Grafana
+    group: grafana.integreatly.org
+    path: spec/version

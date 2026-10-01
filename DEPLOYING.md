@@ -88,6 +88,10 @@ renders into `kube-system`, and every other child into `monitoring`.
 Copy `stack/grafana/examples/k8s-pvc-grafana.yaml` and list it under `resources:`. The
 Grafana instance mounts that claim, and without it the Grafana pod stays `Pending`.
 
+Add an `images:` entry for `docker.io/grafana/grafana` with a Grafana tag. The release
+sets the tag to `changeme`, so without the entry the Grafana pod stays in
+`ImagePullBackOff`. Read [the Grafana README](manifests/stack/grafana/README.md).
+
 Add `stack/alertmanager/msteams` under `resources:` to route alerts. It is the one
 shipped receiver, and it reads a webhook Secret that you supply.
 
@@ -138,6 +142,9 @@ resources:
 patches:
   - path: overlays/prom-instance.yaml
   - path: overlays/prom-am-instance.yaml
+images:
+  - name: docker.io/grafana/grafana
+    newTag: 13.1.3
 labels:
   - pairs:
       app.kubernetes.io/part-of: metrics-stack

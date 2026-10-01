@@ -51,3 +51,8 @@ spec:
             - name: grafana
               persistentVolumeClaim:
                 claimName: grafana
+  # The tag comes from the `images:` field of kustomization.yaml, which holds
+  # the version. Without a value here, the Grafana Operator writes its own
+  # default into this field once and never changes it again, also after an
+  # operator upgrade. The full image reference lets `images:` match the field.
+  version: docker.io/grafana/grafana

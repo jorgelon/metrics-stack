@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [0.0.21-alpha11] - 2026-10-01
+
+### Changed
+- **stack**: **BREAKING**: you must choose the Grafana version. Add an `images:` entry for `docker.io/grafana/grafana` with your `newTag` to your kustomization. `stack/grafana` sets the tag of `spec.version` to `changeme`, so without the entry the Grafana pod stays in `ImagePullBackOff`. Before, the Grafana Operator wrote its own default into the empty `spec.version` once and never changed it, so an operator upgrade left Grafana on an old version. The new `kustomizeconfig-images.yaml` lets `images:` change `spec.version`. Read the Grafana release notes before a major upgrade, because Grafana 12 removed Angular panels
+
 ## [0.0.21-alpha10] - 2026-10-01
 
 ### Fixed

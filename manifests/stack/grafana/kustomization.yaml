@@ -2,3 +2,14 @@ namespace: monitoring
 resources:
   - grafana-instance.yaml
   - grafana-ds-prometheus.yaml
+# Makes the images field below change spec.version of the Grafana, not only
+# container images.
+configurations:
+  - kustomizeconfig-images.yaml
+# The Grafana version is a sentinel. A consumer must replace it with its own
+# images entry and a tag of docker.io/grafana/grafana. The sentinel is no
+# valid tag, so a forgotten entry leaves the pod in ImagePullBackOff instead of
+# running a Grafana version that nobody chose.
+images:
+  - name: docker.io/grafana/grafana
+    newTag: changeme

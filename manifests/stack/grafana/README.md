@@ -14,7 +14,12 @@ to deploy this part without the rest.
 ```yaml
 resources:
   - <release>/stack/grafana
+images:
+  - name: docker.io/grafana/grafana
+    newTag: 13.1.3
 ```
+
+The `images:` entry is required. Read "The Grafana version" below.
 
 ## Files
 
@@ -22,6 +27,7 @@ resources:
 |-----------------------------|------------------------------------------|
 | `grafana-instance.yaml`     | Grafana CRD instance, with the volume of the `grafana` claim |
 | `grafana-ds-prometheus.yaml`| Grafana datasource pointing to Prometheus|
+| `kustomizeconfig-images.yaml` | Makes `images:` change `spec.version` of the Grafana |
 
 The base mounts a claim but does not create it. It declares no authentication and no
 route. The claim, the authentication and the route need a value that this repository
@@ -132,6 +138,33 @@ login fails.
 Register `<GF_SERVER_ROOT_URL>/login/azuread` as a redirect URI of the app registration.
 Read the [Grafana Azure AD guide](https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/azuread/)
 for the app registration and the role mapping.
+
+## The Grafana version
+
+You must choose the Grafana version. The `images:` field of `kustomization.yaml` in this
+directory sets the tag of `spec.version` in `grafana-instance.yaml` to the sentinel
+`changeme`. Add an `images:` entry with a tag from
+[Docker Hub](https://hub.docker.com/r/grafana/grafana/tags) to your own kustomization:
+
+```yaml
+images:
+  - name: docker.io/grafana/grafana
+    newTag: 13.1.3
+```
+
+If you forget the entry, the Grafana pod stays in `ImagePullBackOff`, because `changeme`
+is no valid tag.
+
+The Grafana Operator writes its own default into an empty `spec.version` once and never
+changes it again, also after an operator upgrade. So this directory never leaves the field
+empty. By default `images:` changes container images only. `kustomizeconfig-images.yaml`
+adds `spec.version` of the Grafana to those fields, and `kustomization.yaml` lists it under
+`configurations:`. Your kustomization inherits that configuration.
+
+When you upgrade the Grafana Operator, compare your version with the default of the new
+release on the [versioning page](https://grafana.github.io/grafana-operator/docs/versioning/).
+Read the Grafana release notes before a major upgrade, because Grafana 12 removed Angular
+panels.
 
 ## Configuration via Environment Variables
 
