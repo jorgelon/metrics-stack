@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [0.0.21-alpha10] - 2026-10-01
+
+### Fixed
+- **apps**: the three ServiceMonitors of `apps/external-secrets` now set `honorLabels: true`. The `namespace` label of the External Secrets metrics now holds the namespace of the ExternalSecret, not `external-secrets`. The "Not Ready ExternalSecrets" panel and the alert descriptions now name the correct namespace. If you query `exported_namespace` for these metrics, query `namespace` instead
+
 ## [0.0.21-alpha9] - 2026-10-01
 
 ### Changed

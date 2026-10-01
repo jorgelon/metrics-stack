@@ -58,6 +58,11 @@ Service, not a separate Service. The port appears only with
 If the chart runs in another namespace, change the `namespaceSelector` in each
 ServiceMonitor file.
 
+The three ServiceMonitors set `honorLabels: true`. The controller exports the
+`namespace` of each ExternalSecret, PushSecret and SecretStore as a metric label.
+Without `honorLabels: true`, Prometheus replaces that label with `external-secrets`,
+the namespace of the scrape target. The real value then moves to `exported_namespace`.
+
 The alerts in the `external-secrets-controller` group filter on
 `service=~".*external-secrets.*"`. The official dashboard uses the same filter.
 If your ServiceMonitor produces a different `service` label, adjust the group.
