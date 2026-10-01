@@ -1,0 +1,18 @@
+# Metrics Server, the vendored upstream release plus the patch that this stack
+# always needs. Repoint the resource below to upgrade, and keep the old version
+# directories.
+namespace: kube-system
+resources:
+  - v0.9.0
+patches:
+  # JSON 6902 append: a strategic merge would replace the whole args list and
+  # drop the upstream flags.
+  - path: k8s-deploy-patch-args-metrics-server.yaml
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: metrics-server
+labels:
+  - pairs:
+      app.kubernetes.io/name: metrics-server

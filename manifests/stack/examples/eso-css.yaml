@@ -1,10 +1,11 @@
-# Example ClusterSecretStore for Azure Key Vault. Copy it into your own source,
-# together with eso-es-grafana-env.yaml, and list both under `resources:`.
+# Example ClusterSecretStore for Azure Key Vault, shared by the whole stack.
+# Copy it into your own source and list the copy under `resources:`.
 #
 # This is the only file in the release that declares the store named
-# `akv-metrics-stack`. The azurekv webhook example under
-# stack/alertmanager/examples reads from it by name, so copy this file once and
-# share it.
+# `akv-metrics-stack`. Two examples read from it by name:
+# stack/grafana/examples/eso-es-grafana-env-akv.yaml and
+# stack/alertmanager/examples/eso-es-msteams-webhook-url-azurekv.yaml. Copy
+# this file once and share it.
 #
 # It authenticates as a service principal, reading its credentials from the
 # `akv-eso-creds` secret in the `external-secrets` namespace. That secret ships
@@ -22,7 +23,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "-5"
   labels:
-    app.kubernetes.io/name: grafana
+    app.kubernetes.io/name: metrics-stack
 spec:
   provider:
     azurekv:

@@ -54,18 +54,18 @@ needs its target directory still in `resources:`.
 
 | File to copy | Folder | Field | Replace |
 |---|---|---|---|
+| [`stack/examples/eso-css.yaml`](manifests/stack/README.md) | `instance/` | `resources:` | `tenantId`, `vaultUrl` |
 | [`stack/prometheus/examples/prom-instance.yaml`](manifests/stack/prometheus/README.md) | `overlays/` | `patches:` | `storageClassName`, and the sizes |
 | [`stack/alertmanager/examples/prom-am-instance.yaml`](manifests/stack/alertmanager/README.md) | `overlays/` | `patches:` | `storageClassName`, and the sizes |
 | `stack/alertmanager/examples/prom-amc-smtp.yaml` | `instance/` | `resources:` | `from`, `to`, `smarthost` |
 | `stack/alertmanager/examples/eso-ss.yaml` | `instance/` | `resources:` | `region` |
 | `stack/alertmanager/examples/eso-es-msteams-webhook-url-awssm.yaml` | `instance/` | `resources:` | `remoteRef.key` |
 | `stack/alertmanager/examples/eso-es-msteams-webhook-url-azurekv.yaml` | `instance/` | `resources:` | the vault key of your own tenant |
-| [`stack/grafana/examples/k8s-pvc-grafana.yaml`](manifests/stack/grafana/README.md) | `instance/` | `resources:` | `storageClassName` |
-| `stack/grafana/examples/grafana-instance.yaml` | `overlays/` | `patches:` | nothing. It mounts the claim above |
+| [`stack/grafana/examples/k8s-pvc-grafana.yaml`](manifests/stack/grafana/README.md) | `instance/` | `resources:` | `storageClassName`. Required |
 | `stack/grafana/examples/gapi-httproute.yaml` | `instance/` | `resources:` | gateway name, namespace, section, hostname |
 | `stack/grafana/examples/grafana-ds-loki.yaml` | `overlays/` | `patches:` | the Loki service URL |
-| `stack/grafana/examples/eso-css.yaml` | `instance/` | `resources:` | `tenantId`, `vaultUrl` |
-| `stack/grafana/examples/eso-es-grafana-env.yaml` | `instance/` | `resources:` | nothing |
+| `stack/grafana/examples/azure-auth/k8s-cm-grafana-env.yaml` | `instance/` | `resources:` | nothing |
+| `stack/grafana/examples/eso-es-grafana-env-akv.yaml` | `instance/` | `resources:` | nothing. Create the vault secrets first |
 | [`addons/karma/examples/k8s-cm-karma-config.yaml`](manifests/addons/karma/README.md) | `instance/` | `resources:` | the receiver name |
 | `addons/karma/examples/gapi-httproute.yaml` | `instance/` | `resources:` | gateway name, namespace, section, hostname |
 | [`apps/quarkus/examples/prom-sm-quarkus.yaml`](manifests/apps/quarkus/README.md) | `instance/` | `resources:` | name, metrics path, namespace, selector |
@@ -84,6 +84,9 @@ Start with the single path `stack` under `resources:`. It pulls in the two opera
 Prometheus, Alertmanager, Grafana, kube-state-metrics, node-exporter and metrics-server.
 To deploy one part alone, reference that child directly. The `metrics-server` child
 renders into `kube-system`, and every other child into `monitoring`.
+
+Copy `stack/grafana/examples/k8s-pvc-grafana.yaml` and list it under `resources:`. The
+Grafana instance mounts that claim, and without it the Grafana pod stays `Pending`.
 
 Add `stack/alertmanager/msteams` under `resources:` to route alerts. It is the one
 shipped receiver, and it reads a webhook Secret that you supply.
@@ -135,7 +138,6 @@ resources:
 patches:
   - path: overlays/prom-instance.yaml
   - path: overlays/prom-am-instance.yaml
-  - path: overlays/grafana-instance.yaml
 labels:
   - pairs:
       app.kubernetes.io/part-of: metrics-stack

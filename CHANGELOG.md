@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## [0.0.21-alpha9] - 2026-10-01
+
+### Changed
+- **stack**: **BREAKING**: `stack/grafana/examples/eso-es-grafana-env.yaml` is now `stack/grafana/examples/eso-es-grafana-env-akv.yaml`, and it has no template. It copies every `GF-` vault secret into the `grafana-env` Secret. The fixed Azure AD settings, such as `GF_AUTH_AZUREAD_ENABLED`, moved to `stack/grafana/examples/azure-auth/k8s-cm-grafana-env.yaml`, a ConfigMap named `grafana-env`. The Grafana instance now also loads that optional ConfigMap with `envFrom`, before the Secret. Copy both files and list both under `resources:`. With only your old copy, the Secret loses the fixed settings and the Azure AD login does not show. The README of `stack/grafana` lists the seven vault secrets that Azure AD needs
+- **stack**: **BREAKING**: the Grafana instance in `stack/grafana/grafana-instance.yaml` now mounts the claim named `grafana` at `/var/lib/grafana` and sets the `Recreate` strategy itself. The release does not create the claim. Copy `stack/grafana/examples/k8s-pvc-grafana.yaml`, replace `storageClassName: changeme`, and list the copy under `resources:`. Without it the Grafana pod stays `Pending`
+- **stack**: **BREAKING**: `stack/grafana-operator` and `stack/prometheus-operator` now select their own version. `stack/prometheus-operator` also adds `--config-reloader-cpu-limit=0`, which used to live in `stack/kustomization.yaml`. If you list a version directory such as `stack/prometheus-operator/v0.90.0` directly, list `stack/prometheus-operator` instead, or the sidecar CPU limit comes back and the Prometheus and Alertmanager StatefulSets are invalid
+- **stack**: **BREAKING**: `stack/grafana/examples/eso-css.yaml` is now `stack/examples/eso-css.yaml`, because the Grafana and the Alertmanager examples both read the `akv-metrics-stack` store. Its `app.kubernetes.io/name` label is now `metrics-stack`. Copy it again from the new path. A copy you made before keeps working
+- **stack**: **BREAKING**: `stack/metrics-server` is now a plain kustomization. It selects `v0.9.0` and adds `--kubelet-insecure-tls` with a JSON 6902 patch, which used to live in `stack/kustomization.yaml`. If you list `stack/metrics-server/v0.9.0` directly, list `stack/metrics-server` instead, or the flag is missing
+- **stack**: the Grafana instance in `stack/grafana/grafana-instance.yaml` now carries the generic Stakater Reloader annotation `reloader.stakater.com/auto: "true"` instead of `secret.reloader.stakater.com/reload: "grafana-env"`. Grafana now restarts when any Secret or ConfigMap that its pod reads changes, not only `grafana-env`
+### Removed
+- **stack**: **BREAKING**: `stack/overlays/metrics-server.yaml` is gone. `stack/metrics-server` now adds `--kubelet-insecure-tls` itself. Remove your copy from `patches:`, or the flag shows up twice
+- **stack**: **BREAKING**: `stack/grafana/examples/grafana-instance.yaml` is gone, because the instance carries the volume itself. Remove your copy from `patches:`. Keep your copy of `k8s-pvc-grafana.yaml`
+### Fixed
+- **stack**: Grafana storage no longer drops the `envFrom` and the `resources` of the Grafana container. The old `examples/grafana-instance.yaml` was a strategic merge patch. Kustomize has no schema for the `Grafana` custom resource, so it replaced the whole `containers` list. Grafana then never read the `grafana-env` secret, and the Azure AD login did not show. The instance now declares the volume itself, so no patch is needed
+
 ## [0.0.21-alpha8] - 2026-09-28
 
 ### Added

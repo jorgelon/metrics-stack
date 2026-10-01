@@ -16,7 +16,7 @@ Never commit internal information: AWS ARNs, internal project names, cluster nam
 
 There are three layers under `manifests/`:
 
-- `stack/` holds the monitoring infrastructure itself: operators, Prometheus, Alertmanager, Grafana, kube-state-metrics, node-exporter, metrics-server, and `overlays/` with Day-2 patches. The file `manifests/stack/kustomization.yaml` is the source of truth for the active vendored component versions. Do not hardcode version numbers in documentation. Reference that file instead.
+- `stack/` holds the monitoring infrastructure itself: operators, Prometheus, Alertmanager, Grafana, kube-state-metrics, node-exporter, metrics-server, and `overlays/` with Day-2 patches. Each vendored component selects its active version in its own `kustomization.yaml`, for example `manifests/stack/prometheus-operator/kustomization.yaml`. That file is the source of truth for the version. Do not hardcode version numbers in documentation. Reference that file instead. The file `manifests/stack/kustomization.yaml` lists the children only.
 - `apps/` holds one directory per monitored application: ServiceMonitors, PodMonitors, PrometheusRules and GrafanaDashboards. Consumers opt in per app.
 - `addons/` holds optional extras. Today that is `karma` only.
 
@@ -65,6 +65,9 @@ The two current components, with what each one patches:
 - `manifests/apps/gateway-api/`, the kube-state-metrics ClusterRole and Deployment that the consumer deploys.
 - `manifests/apps/coredns/eks-auto-mode`, the node-exporter DaemonSet of `manifests/stack`. It is one of the three coredns scrape targets. The parent `apps/coredns` ships the rules and dashboards only, and the consumer adds exactly one target. The other two, `coredns/kubeadm` and `coredns/ionos`, patch nothing and go in `resources:`.
 
+A patch on a custom resource such as `Grafana` must be a JSON 6902 patch when it touches a list.
+Kustomize has no schema for a custom resource, so a strategic merge patch replaces the whole list, for example every container with its `envFrom`.
+
 A component's transformers rewrite the parent's resources too.
 So a component sets neither `namespace:` nor `labels:`.
 Each of its resources carries its own `namespace:` and its own `app.kubernetes.io/name` label in its metadata.
@@ -76,7 +79,7 @@ Render it through a test kustomization that lists it under `components:`.
 A manifest that holds the literal sentinel `changeme` is an example, never a resource and never a component.
 It lives in an `examples/` sub-directory of the component it belongs to.
 That directory carries no `kustomization.yaml`, so the release never renders it, and no kustomization lists it under `resources:` or `components:`.
-The current ones are `manifests/stack/alertmanager/examples`, `manifests/stack/grafana/examples`, `manifests/stack/prometheus/examples`, `manifests/addons/karma/examples` and `manifests/apps/quarkus/examples`.
+The current ones are `manifests/stack/examples`, `manifests/stack/alertmanager/examples`, `manifests/stack/grafana/examples`, `manifests/stack/prometheus/examples`, `manifests/addons/karma/examples` and `manifests/apps/quarkus/examples`.
 
 Every other directory renders complete.
 It needs no overlay to work, so a build of it is either deployable or broken, never quietly useless.
@@ -108,7 +111,7 @@ Refresh them with the component's own script instead of hand-editing them:
 ```
 
 To upgrade, add the new version directory.
-Then repoint the `resources:` entry in the parent `kustomization.yaml`.
+Then repoint the `resources:` entry in the `kustomization.yaml` of the component directory, for example `metrics-server/kustomization.yaml`.
 Keep the old version directories.
 
 ## Working commands
@@ -162,9 +165,10 @@ A dashboard is sourced by `url:`, by `grafanaCom.id:` or by inline JSON.
 - Keycloak: the Keycloak CR needs `metrics-enabled=true` and `event-metrics-user-enabled=true`. The ServiceMonitor here is hand-made.
 - Quarkus: upstream ships no standard ServiceMonitor. Write one per application, starting from `apps/quarkus/examples`.
 - Loki: this component adds a Grafana datasource that points at `http://loki.loki.svc.cluster.local:3100`. The dashboards come from loki-mixin-compiled.
-- Grafana: the instance reads environment variables from an optional `grafana-env` Secret and carries Stakater Reloader annotations. The consumer supplies that Secret, or copies `stack/grafana/examples/eso-css.yaml` and `eso-es-grafana-env.yaml` to build it from Azure Key Vault. Storage lives in `stack/grafana/examples`, not in the instance.
+- Grafana: the instance reads environment variables from an optional `grafana-env` ConfigMap and an optional `grafana-env` Secret, in that order, and carries the generic Stakater Reloader annotation `reloader.stakater.com/auto: "true"`. The consumer supplies both, or copies `stack/examples/eso-css.yaml` and the two files of `stack/grafana/examples/azure-auth` to build them for Azure AD. The ConfigMap holds the settings with no secret, and the ExternalSecret builds the Secret from Azure Key Vault. The store in `stack/examples/eso-css.yaml` is shared by the whole stack, so it lives in no child directory. The instance runs one replica with the `Recreate` strategy and mounts a claim named `grafana`. The release does not create that claim, so the consumer copies `stack/grafana/examples/k8s-pvc-grafana.yaml`. Without the copy the pod stays `Pending`.
 - kubernetes-mixin: the scheduler, controller-manager and kube-proxy alerts are disabled on purpose, because managed control planes do not expose them.
-- Prometheus and Alertmanager: the shipped instances declare no storage and no container size. Both values track the cluster, so `stack/prometheus/examples/prom-instance.yaml` and `stack/alertmanager/examples/prom-am-instance.yaml` carry them. The `--config-reloader-cpu-limit=0` argument in `manifests/stack/kustomization.yaml` removes the 10m CPU limit that the operator gives every config-reloader sidecar. Without it the request in either example is above the limit and the StatefulSet is invalid.
+- Prometheus and Alertmanager: the shipped instances declare no storage and no container size. Both values track the cluster, so `stack/prometheus/examples/prom-instance.yaml` and `stack/alertmanager/examples/prom-am-instance.yaml` carry them. The `--config-reloader-cpu-limit=0` argument in `manifests/stack/prometheus-operator/kustomization.yaml` removes the 10m CPU limit that the operator gives every config-reloader sidecar. Without it the request in either example is above the limit and the StatefulSet is invalid.
+- Metrics Server: `stack/metrics-server/kustomization.yaml` selects the version directory and adds `--kubelet-insecure-tls` with a JSON 6902 patch. A version directory holds the upstream manifest only, so a consumer never references it directly.
 - Alertmanager: the instance ships with no routing. `stack/alertmanager/msteams` is the one deployable receiver, and it reads a secret it does not create. The mail receiver and both webhook secret sources are examples.
 
 ## Upstream rule and dashboard sources

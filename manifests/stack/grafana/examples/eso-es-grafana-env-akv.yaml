@@ -1,0 +1,36 @@
+# Example ExternalSecret that builds the grafana-env Secret from every Azure Key
+# Vault secret whose name starts with GF-. The Grafana instance of stack/grafana
+# loads that Secret with envFrom. Copy it into your own source, together with
+# azure-auth/k8s-cm-grafana-env.yaml and stack/examples/eso-css.yaml, and list
+# all three under `resources:`. The README of stack/grafana lists the vault
+# secrets that Azure AD needs.
+#
+# Use it to set any Grafana option from the vault without a change to this
+# file: add a vault secret, and it reaches Grafana on the next refresh. Key
+# Vault names cannot contain an underscore, so each vault secret uses dashes
+# and the rewrite turns them into underscores: GF-AUTH-AZUREAD-CLIENT-ID
+# becomes GF_AUTH_AZUREAD_CLIENT_ID.
+#
+# The namespace ships here, because the kustomization that lists eso-css.yaml
+# can set no `namespace:` of its own.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: grafana-env
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+spec:
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: akv-metrics-stack
+  dataFrom:
+    - find:
+        conversionStrategy: Default
+        decodingStrategy: None
+        name:
+          regexp: ^GF-(.*)$
+      rewrite:
+        - regexp:
+            source: "-"
+            target: _

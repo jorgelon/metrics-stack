@@ -1,0 +1,19 @@
+# Prometheus Operator, the vendored upstream release plus the patch that this
+# stack always needs. Repoint the resource below to upgrade, and keep the old
+# version directories.
+namespace: monitoring
+resources:
+  - v0.94.1
+patches:
+  # The operator gives every config-reloader sidecar a 10m CPU limit. The value
+  # 0 removes the limit, so a reload burst is not throttled. The Prometheus and
+  # the Alertmanager instances set the CPU request of their own sidecar.
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: prometheus-operator
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --config-reloader-cpu-limit=0

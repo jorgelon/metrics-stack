@@ -7,12 +7,15 @@ Official Prometheus Operator manifests, version-pinned.
 This directory is a plain kustomization. It renders into the `monitoring` namespace.
 List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
 walkthrough. The `stack` path already brings this directory in. Reference it alone only
-to deploy this part without the rest. Name the version directory in the path.
+to deploy this part without the rest.
 
 ```yaml
 resources:
-  - <release>/stack/prometheus-operator/<version>
+  - <release>/stack/prometheus-operator
 ```
+
+Do not reference a version directory directly. The `kustomization.yaml` of this directory
+selects the active version and applies the patch below. A version directory holds the upstream manifest only.
 
 ## Available Versions
 
@@ -30,9 +33,12 @@ Run the download script to fetch a new operator release:
 ./manifests/stack/prometheus-operator/download_releases.sh
 ```
 
+Then repoint the `resources:` entry of `kustomization.yaml` in this directory to the new
+version directory.
+
 ## Patched arguments
 
-The file `manifests/stack/kustomization.yaml` adds `--config-reloader-cpu-limit=0`
+The file `kustomization.yaml` of this directory adds `--config-reloader-cpu-limit=0`
 to the operator. By default the operator gives every `config-reloader` sidecar
 a 10m CPU limit. An instance that declares its own sidecar resources still
 gets that limit. A sidecar CPU request above 10m then makes the StatefulSet invalid.

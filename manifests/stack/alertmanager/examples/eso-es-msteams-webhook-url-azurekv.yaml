@@ -3,7 +3,7 @@
 # secret, so list stack/alertmanager/msteams under `resources:` as well.
 #
 # This file creates no store. It reads the ClusterSecretStore named
-# `akv-metrics-stack`, which stack/grafana/examples/eso-css.yaml declares. Copy
+# `akv-metrics-stack`, which stack/examples/eso-css.yaml declares. Copy
 # that file too, unless the store already exists in your cluster.
 #
 # Replace `secret/msteams-webhook-url` with the Key Vault key that holds the

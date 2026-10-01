@@ -1,0 +1,5 @@
+# Grafana Operator, the vendored upstream release. Repoint the resource below
+# to upgrade, and keep the old version directories.
+namespace: monitoring
+resources:
+  - v5.25.0

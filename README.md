@@ -10,6 +10,7 @@ a worked example. The tables below say what each directory contains.
 
 | Component           | Description                                       | Docs                                                    |
 |---------------------|---------------------------------------------------|---------------------------------------------------------|
+| Stack               | The root of every stack component below           | [README](manifests/stack/README.md)                     |
 | Prometheus Operator | Manages Prometheus instances (official manifests) | [README](manifests/stack/prometheus-operator/README.md) |
 | Grafana Operator    | Manages Grafana instances (official manifests)    | [README](manifests/stack/grafana-operator/README.md)    |
 | Prometheus          | Metrics collection and storage                    | [README](manifests/stack/prometheus/README.md)          |

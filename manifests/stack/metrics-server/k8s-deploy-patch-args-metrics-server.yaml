@@ -1,0 +1,8 @@
+# Adds --kubelet-insecure-tls to the metrics-server container.
+#
+# A kubeadm kubelet serves a self-signed certificate that no cluster CA signs,
+# so without this flag metrics-server rejects every kubelet and
+# `kubectl top` returns no data.
+- op: add
+  path: /spec/template/spec/containers/0/args/-
+  value: --kubelet-insecure-tls

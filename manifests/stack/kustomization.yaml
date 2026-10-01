@@ -1,27 +1,11 @@
+# Each child selects its own version and applies its own patches. Read the
+# kustomization.yaml of a child for the active version of that component.
 resources:
   - alertmanager
   - grafana
-  - grafana-operator/v5.25.0
+  - grafana-operator
   - kube-state-metrics
-  - metrics-server/v0.9.0
+  - metrics-server
   - node-exporter
   - prometheus
-  - prometheus-operator/v0.90.0
-patches:
-  - target:
-      kind: Deployment
-      name: metrics-server
-    patch: |-
-      - op: add
-        path: /spec/template/spec/containers/0/args/-
-        value: --kubelet-insecure-tls
-  # The operator gives every config-reloader sidecar a 10m CPU limit. The value
-  # 0 removes the limit, so a reload burst is not throttled. The Prometheus and
-  # the Alertmanager instances set the CPU request of their own sidecar.
-  - target:
-      kind: Deployment
-      name: prometheus-operator
-    patch: |-
-      - op: add
-        path: /spec/template/spec/containers/0/args/-
-        value: --config-reloader-cpu-limit=0
+  - prometheus-operator

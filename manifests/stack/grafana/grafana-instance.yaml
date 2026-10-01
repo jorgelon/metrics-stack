@@ -11,17 +11,26 @@ spec:
   deployment:
     metadata:
       annotations:
-        secret.reloader.stakater.com/reload: "grafana-env"
+        reloader.stakater.com/auto: "true"
         reloader.stakater.com/rollout-strategy: "restart"
     spec:
-      # Storage is not declared here. Copy examples/k8s-pvc-grafana.yaml and
-      # examples/grafana-instance.yaml into your own source for a volume-backed
-      # instance. Grafana keeps its state in SQLite on that volume unless you
-      # point it at an external database.
+      # A single replica backed by the claim named grafana, which the release
+      # does not create. Copy examples/k8s-pvc-grafana.yaml to create it.
+      #
+      # The volume is ReadWriteOnce, so a rolling update deadlocks: the new pod
+      # cannot mount the volume while the old one still holds it. Recreate
+      # avoids that, at the cost of a short outage on every update.
+      strategy:
+        type: Recreate
       template:
         spec:
           containers:
+            # Both sources are optional. The Secret comes last, so a key in
+            # both takes the value of the Secret.
             - envFrom:
+                - configMapRef:
+                    name: grafana-env
+                    optional: true
                 - secretRef:
                     name: grafana-env
                     optional: true
@@ -31,7 +40,14 @@ spec:
                   cpu: 100m
                 limits:
                   memory: 512Mi
+              volumeMounts:
+                - mountPath: /var/lib/grafana
+                  name: grafana
           securityContext:
             fsGroup: 472
             supplementalGroups:
               - 0
+          volumes:
+            - name: grafana
+              persistentVolumeClaim:
+                claimName: grafana

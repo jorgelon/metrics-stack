@@ -95,7 +95,7 @@ provider chain, so the external-secrets pod needs an IAM role that reads that se
 secret holds the webhook URL under the property `msteams-webhook-url`.
 
 `eso-es-msteams-webhook-url-azurekv.yaml` creates no store. It reads the
-`ClusterSecretStore` named `akv-metrics-stack`, which `grafana/examples/eso-css.yaml`
+`ClusterSecretStore` named `akv-metrics-stack`, which `stack/examples/eso-css.yaml`
 declares. Copy that file too, unless the store already exists. The Key Vault holds a
 secret named `secret/msteams-webhook-url`.
 

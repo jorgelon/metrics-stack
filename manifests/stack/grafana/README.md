@@ -1,6 +1,8 @@
 # Grafana
 
 Grafana instance managed by the Grafana Operator, with a Prometheus datasource pre-configured.
+It runs one replica and keeps its SQLite database on a claim named `grafana`, which you
+create from `examples/k8s-pvc-grafana.yaml`.
 
 ## How to deploy
 
@@ -18,11 +20,12 @@ resources:
 
 | File                        | Description                              |
 |-----------------------------|------------------------------------------|
-| `grafana-instance.yaml`     | Grafana CRD instance                     |
+| `grafana-instance.yaml`     | Grafana CRD instance, with the volume of the `grafana` claim |
 | `grafana-ds-prometheus.yaml`| Grafana datasource pointing to Prometheus|
 
-The base declares no storage, no authentication and no route. Every one of those needs a
-value that this repository cannot know, so each one is an example to copy.
+The base mounts a claim but does not create it. It declares no authentication and no
+route. The claim, the authentication and the route need a value that this repository
+cannot know, so each one is an example to copy.
 
 ## Examples
 
@@ -33,19 +36,17 @@ value that this repository cannot know, so each one is an example to copy.
 
 | File | What it does | Copy into | List under |
 |---|---|---|---|
+| `k8s-pvc-grafana.yaml` | The 2Gi claim that the instance mounts. Required | `instance/` | `resources:` |
 | `gapi-httproute.yaml` | Exposes Grafana through a Gateway API gateway | `instance/` | `resources:` |
 | `grafana-ds-loki.yaml` | Repoints the Loki datasource of `apps/loki` | `overlays/` | `patches:` |
-| `k8s-pvc-grafana.yaml` | A 2Gi volume for the SQLite database | `instance/` | `resources:` |
-| `grafana-instance.yaml` | Mounts that volume and sets the `Recreate` strategy | `overlays/` | `patches:` |
-| `eso-css.yaml` | The Azure Key Vault store that the whole stack reads from | `instance/` | `resources:` |
-| `eso-es-grafana-env.yaml` | Azure AD single sign-on, read from that vault | `instance/` | `resources:` |
+| `azure-auth/k8s-cm-grafana-env.yaml` | The Azure AD settings that hold no secret | `instance/` | `resources:` |
+| `eso-es-grafana-env-akv.yaml` | Every `GF-` secret of the vault, for example the Azure AD keys | `instance/` | `resources:` |
 
 ```yaml
 resources:
   - <release>/stack
   - instance/k8s-pvc-grafana.yaml
-patches:
-  - path: overlays/grafana-instance.yaml
+  - instance/gapi-httproute.yaml
 ```
 
 ### The route
@@ -67,64 +68,74 @@ target fails the build.
 ### Storage
 
 Grafana OSS keeps users, sessions and annotations in SQLite under `/var/lib/grafana`.
-Without a volume, every restart loses them. Dashboards and datasources survive either way,
-because the Grafana Operator reconciles them from their own objects.
+Dashboards and datasources survive a restart either way, because the Grafana Operator
+reconciles them from their own objects.
 
-Copy `k8s-pvc-grafana.yaml` and `grafana-instance.yaml` together. The first is a 2Gi
-`ReadWriteOnce` claim named `grafana`. The second mounts it and sets the deployment
-strategy to `Recreate`. Replace the `changeme` storage class in the claim, and keep
-`stack` under `resources:`.
+The instance mounts the claim named `grafana` at that path. The release does not create
+the claim, so copy `k8s-pvc-grafana.yaml` and replace its `changeme` storage class. If
+you forget the copy, the Grafana pod stays `Pending`. The sentinel binds nothing, so a
+forgotten replacement also leaves the pod `Pending`.
 
-`Recreate` is required, not a preference. The volume is `ReadWriteOnce`, so a rolling
-update deadlocks. The new pod cannot mount the volume while the old one still holds it.
-The cost is a short outage on every update.
+The instance sets the deployment strategy to `Recreate`. The volume is `ReadWriteOnce`,
+so a rolling update deadlocks. The new pod cannot mount the volume while the old one
+still holds it. The cost is a short outage on every update.
 
-Grafana also reads its state from an external PostgreSQL or MySQL database, through the
-`GF_DATABASE_*` variables. That removes the volume, the `Recreate` strategy and the single
-replica limit. This release ships nothing for it yet. To use it, set those variables in
-the `grafana-env` secret and copy neither file.
+Do not patch the `Grafana` instance with a strategic merge patch that lists
+`containers`. Kustomize has no schema for the custom resource, so it replaces the whole
+list and drops the `envFrom` that loads `grafana-env`.
 
 ### Single sign-on
 
-Copy `eso-css.yaml` and `eso-es-grafana-env.yaml` together. They fill the `grafana-env`
-secret that the instance already loads with `envFrom`, and they turn on Azure AD single
-sign-on. Without them, Grafana starts with the local login form and the admin credentials
-that the Grafana Operator generates.
+Copy three files and list all three under `resources:`. Together they turn on Azure AD
+single sign-on. Without them, Grafana starts with the local login form and the admin
+credentials that the Grafana Operator generates.
+
+- `azure-auth/k8s-cm-grafana-env.yaml` is a ConfigMap named `grafana-env`. It holds the
+  Azure AD settings that hold no secret and never change between clusters, such as the
+  scopes and PKCE.
+- `eso-es-grafana-env-akv.yaml` is an ExternalSecret that builds the Secret named
+  `grafana-env` from every `GF-` secret of the vault.
+- `stack/examples/eso-css.yaml` is the vault store that the whole stack shares. Read
+  [the stack README](../README.md) for it.
 
 You need the External Secrets Operator with its CRDs, and the `akv-eso-creds` secret in
 the `external-secrets` namespace. You also need an Azure Key Vault, and an app
 registration for Grafana.
 
-`eso-css.yaml` is a `ClusterSecretStore` named `akv-metrics-stack`, scoped to the
-`monitoring` namespace. It authenticates as a service principal, reading its credentials
-from `akv-eso-creds`. It is the only file of the release that declares that store, and
-`stack/alertmanager/examples/eso-es-msteams-webhook-url-azurekv.yaml` reads from it, so
-copy `eso-css.yaml` once and share it. Replace its `tenantId` and the host part of its
-`vaultUrl`.
+The instance loads the ConfigMap and the Secret with `envFrom`. The Secret comes last, so
+a key in both takes the value of the Secret. The ConfigMap and the ExternalSecret carry
+`namespace: monitoring` in their own metadata, because the kustomization that lists the
+cluster-scoped store can set no `namespace:`.
 
-`eso-css.yaml` is cluster-scoped. Kustomize does not know the scope of a custom resource,
-so a `namespace:` in the kustomization that lists it writes a namespace into the object.
-Set no `namespace:` there. `eso-es-grafana-env.yaml` carries `namespace: monitoring` in
-its own metadata instead.
+The ExternalSecret finds the vault secrets by the regular expression `^GF-(.*)$`. An
+Azure Key Vault name cannot hold a `_`, so the ExternalSecret rewrites each `-` into a
+`_`. So `GF-AUTH-AZUREAD-CLIENT-ID` in the vault becomes `GF_AUTH_AZUREAD_CLIENT_ID` in
+the Secret. A new `GF-` vault secret reaches Grafana on the next refresh, with no change
+to the file.
 
-`eso-es-grafana-env.yaml` collects every vault secret whose name starts with `GF-`. It
-rewrites each `-` into a `_`, because an Azure Key Vault name cannot hold a `_`. So
-`GF-AUTH-AZUREAD-CLIENT-ID` in the vault becomes `GF_AUTH_AZUREAD_CLIENT_ID` in the
-secret. Create these secrets in the vault. The file supplies every other Azure AD setting.
+### Azure Key Vault secrets for Azure AD
 
-| Vault secret | Becomes |
-|---|---|
-| `GF-AUTH-AZUREAD-ALLOWED-GROUPS` | the group object IDs allowed to sign in |
-| `GF-AUTH-AZUREAD-ALLOWED-ORGANIZATIONS` | the tenant IDs allowed to sign in |
-| `GF-AUTH-AZUREAD-AUTH-URL` | the authorize endpoint of the app registration |
-| `GF-AUTH-AZUREAD-TOKEN-URL` | the token endpoint of the app registration |
-| `GF-AUTH-AZUREAD-CLIENT-ID` | the application ID |
-| `GF-AUTH-AZUREAD-CLIENT-SECRET` | the client secret |
-| `GF-SERVER-ROOT-URL` | the public URL of this Grafana |
+Create these seven secrets in the vault before you deploy. The ConfigMap supplies every
+other Azure AD setting. If one of them is missing, Grafana starts, but the Azure AD
+login fails.
+
+| Vault secret | Becomes | Value |
+|---|---|---|
+| `GF-AUTH-AZUREAD-CLIENT-ID` | `GF_AUTH_AZUREAD_CLIENT_ID` | the application ID of the app registration |
+| `GF-AUTH-AZUREAD-CLIENT-SECRET` | `GF_AUTH_AZUREAD_CLIENT_SECRET` | a client secret of the app registration |
+| `GF-AUTH-AZUREAD-AUTH-URL` | `GF_AUTH_AZUREAD_AUTH_URL` | `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/authorize` |
+| `GF-AUTH-AZUREAD-TOKEN-URL` | `GF_AUTH_AZUREAD_TOKEN_URL` | `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token` |
+| `GF-AUTH-AZUREAD-ALLOWED-ORGANIZATIONS` | `GF_AUTH_AZUREAD_ALLOWED_ORGANIZATIONS` | the tenant IDs allowed to sign in |
+| `GF-AUTH-AZUREAD-ALLOWED-GROUPS` | `GF_AUTH_AZUREAD_ALLOWED_GROUPS` | the group object IDs allowed to sign in |
+| `GF-SERVER-ROOT-URL` | `GF_SERVER_ROOT_URL` | the public URL of this Grafana, the same hostname as the route |
+
+Register `<GF_SERVER_ROOT_URL>/login/azuread` as a redirect URI of the app registration.
+Read the [Grafana Azure AD guide](https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/azuread/)
+for the app registration and the role mapping.
 
 ## Configuration via Environment Variables
 
-The Grafana instance loads a Secret named `grafana-env` as environment variables. Use this to override any Grafana configuration option:
+The Grafana instance loads a ConfigMap and a Secret, both named `grafana-env` and both optional, as environment variables. Put sensitive values in the Secret and the rest in the ConfigMap. Use them to override any Grafana configuration option:
 
 ```yaml
 apiVersion: v1
@@ -140,9 +151,12 @@ See the [Grafana environment variable docs](https://grafana.com/docs/grafana/lat
 
 ## Automatic Restart on Config Change
 
-When the `grafana-env` Secret changes, Grafana restarts and picks up the new configuration. The Grafana deployment carries the annotation that [Stakater Reloader](https://github.com/stakater/Reloader) watches, so Reloader must run in the cluster.
+When a Secret or a ConfigMap that the Grafana pod reads changes, Grafana restarts and picks up the new configuration. The `grafana-env` Secret is one of them. The Grafana deployment carries two annotations that [Stakater Reloader](https://github.com/stakater/Reloader) watches, so Reloader must run in the cluster.
+
+`reloader.stakater.com/auto: "true"` tells Reloader to watch every Secret and ConfigMap that the pod reads. `reloader.stakater.com/rollout-strategy: "restart"` makes Reloader delete the pod instead of editing the pod template. The Grafana Operator owns the Deployment and reverts edits to it.
 
 ## Limitations
 
 - Not configured for more than 1 replica (Grafana OSS limitation with SQLite).
-- Use Day 2 overlays to add resource limits or persistent storage customizations.
+- Use Day 2 overlays to add resource limits.
+- To use an external PostgreSQL or MySQL database through the `GF_DATABASE_*` variables, remove the volume and the `Recreate` strategy with a JSON 6902 patch.

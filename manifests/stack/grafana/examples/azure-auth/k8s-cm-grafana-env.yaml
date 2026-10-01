@@ -1,0 +1,29 @@
+# Example ConfigMap with the Azure AD settings of Grafana that hold no secret
+# and never change between clusters. The Grafana instance of stack/grafana
+# loads it with envFrom. Copy it into your own source, together with
+# ../eso-es-grafana-env-akv.yaml, and list both under `resources:`.
+#
+# The values that differ per cluster or that are sensitive, such as the client
+# ID, the client secret and the tenant, come from the vault through
+# ../eso-es-grafana-env-akv.yaml. The README of stack/grafana lists them.
+#
+# The namespace and the name label ship here, because the consumer copies this
+# file into a kustomization that this repository does not control.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-env
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: grafana
+data:
+  GF_AUTH_AZUREAD_ALLOW_ASSIGN_GRAFANA_ADMIN: "false"
+  GF_AUTH_AZUREAD_ALLOW_SIGN_UP: "true"
+  GF_AUTH_AZUREAD_AUTO_LOGIN: "false"
+  GF_AUTH_AZUREAD_ENABLED: "true"
+  GF_AUTH_AZUREAD_NAME: Azure AD
+  GF_AUTH_AZUREAD_ROLE_ATTRIBUTE_STRICT: "true"
+  GF_AUTH_AZUREAD_SCOPES: openid email profile
+  GF_AUTH_AZUREAD_SKIP_ORG_ROLE_SYNC: "false"
+  GF_AUTH_AZUREAD_USE_PKCE: "true"
+  GF_DATE_FORMATS_DEFAULT_TIMEZONE: UTC

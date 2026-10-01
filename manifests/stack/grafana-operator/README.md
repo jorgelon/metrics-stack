@@ -7,12 +7,15 @@ Official Grafana Operator manifests, version-pinned.
 This directory is a plain kustomization. It renders into the `monitoring` namespace.
 List it under `resources:`. Read [DEPLOYING.md](../../../DEPLOYING.md) for the full
 walkthrough. The `stack` path already brings this directory in. Reference it alone only
-to deploy this part without the rest. Name the version directory in the path.
+to deploy this part without the rest.
 
 ```yaml
 resources:
-  - <release>/stack/grafana-operator/<version>
+  - <release>/stack/grafana-operator
 ```
+
+Do not reference a version directory directly. The `kustomization.yaml` of this directory
+selects the active version.
 
 ## Updating
 
@@ -22,7 +25,8 @@ Run the download script to fetch a new operator release:
 ./manifests/stack/grafana-operator/download_release.sh
 ```
 
-Change the link in the stack kustomization.yaml
+Then repoint the `resources:` entry of `kustomization.yaml` in this directory to the new
+version directory.
 
 ## References
 

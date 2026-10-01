@@ -1,18 +1,20 @@
-# Example claim for the Grafana database. Copy it into your own source together
-# with grafana-instance.yaml, list this file under `resources:` and the other
-# one under `patches:`.
+# Example claim for the Grafana database. Copy it into your own source, list
+# the copy under `resources:`, and replace `changeme` with a storage class of
+# your cluster.
 #
-# Grafana OSS keeps users, sessions, annotations and starred dashboards in
-# SQLite under /var/lib/grafana. Without this claim every restart loses them.
-# Dashboards and datasources survive either way, because the Grafana Operator
-# reconciles them from their own objects on every start.
+# The Grafana instance of the parent directory mounts a claim named `grafana`
+# at /var/lib/grafana, where Grafana OSS keeps users, sessions, annotations and
+# starred dashboards in SQLite. The release does not create that claim. Without
+# this copy the Grafana pod stays Pending.
 #
 # ReadWriteOnce, because Grafana OSS runs a single replica and some storage
 # classes do not support ReadWriteMany. 2Gi holds the database and the plugin
-# directory on a mid-sized cluster. The storage class is cluster-specific:
-# replace `changeme` with a class of your cluster. The sentinel binds nothing,
-# so a forgotten replacement leaves the pod Pending instead of landing the
-# database on the wrong disk.
+# directory on a mid-sized cluster. The sentinel binds nothing, so a forgotten
+# replacement leaves the pod Pending instead of landing the database on the
+# wrong disk.
+#
+# The namespace and the name label ship here, because the consumer copies this
+# file into a kustomization that this repository does not control.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
